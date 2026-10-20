@@ -3,7 +3,7 @@ import type { BrandSystem, GenResult } from '../lib/types'
 import { Brochure } from './Brochure'
 import { Poster } from './Poster'
 import { BannerCard, ProgramCard, QuoteCard } from './Social'
-import { LogoMark, WaveLine } from './BrandMark'
+import { LogoMark, MotifDecor } from './BrandMark'
 import { exportPdf, exportPng, exportTagged } from '../lib/exports'
 import templatesCss from './templates.css?inline'
 
@@ -409,7 +409,7 @@ function BrandSheet({ brand, copy }: { brand: BrandSystem; copy: GenResult['copy
           <div className="zh">{brand.slogan.zh}</div>
           <div className="en">{brand.slogan.en}</div>
           <div style={{ marginTop: 18 }}>
-            <WaveLine width={300} height={20} color={brand.colors.accent} />
+            <MotifDecor width={300} height={20} color={brand.colors.accent} brand={brand} />
           </div>
         </div>
         <div className="bf-sheet-sec">
@@ -440,7 +440,7 @@ function BrandSheet({ brand, copy }: { brand: BrandSystem; copy: GenResult['copy
             </div>
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <WaveLine width={520} height={40} color={brand.colors.primary} />
+            <MotifDecor width={520} height={40} color={brand.colors.primary} brand={brand} />
           </div>
         </div>
       </div>

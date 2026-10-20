@@ -1,9 +1,11 @@
-import { chatJSON } from './providers/llm'
+import { chatJSON, chatText } from './providers/llm'
 import { generateHero } from './providers/image'
 import { parseJSONLoose } from './json'
 import {
   applyPatch,
+  BRIEF_OPTIMIZER_PROMPT,
   BRAND_SYSTEM_PROMPT,
+  buildBriefOptimizerUserPrompt,
   buildBrandUserPrompt,
   buildCopyUserPrompt,
   buildDataPointsUserPrompt,
@@ -19,6 +21,17 @@ import type { AgentEvent, AgentId, BrandPatch, BrandSystem, CopyBundle, GenResul
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export type Emit = (e: AgentEvent) => void
+
+/** 简报 AI 优化：把直白凌乱的描述升级为结构完整的品牌简报 */
+export async function optimizeBrief(raw: string, settings: AppSettings): Promise<string> {
+  const text = await chatText(
+    settings.llm,
+    BRIEF_OPTIMIZER_PROMPT,
+    buildBriefOptimizerUserPrompt(raw),
+    0.7
+  )
+  return text.replace(/^["「『]|["」』]$/g, '').trim()
+}
 
 /**
  * 编排管线（模型无关）：

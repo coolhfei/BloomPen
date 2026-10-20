@@ -48,6 +48,46 @@ export async function chatJSON<T>(
   return parseJSONLoose<T>(content)
 }
 
+/** 纯文本对话（不走 JSON 协议），用于简报优化等场景 */
+export async function chatText(
+  cfg: LlmConfig,
+  system: string,
+  user: string,
+  temperature = 0.7
+): Promise<string> {
+  const baseURL = cfg.baseURL.replace(/\/+$/, '')
+  const res = await httpRequest({
+    url: `${baseURL}/chat/completions`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(cfg.apiKey ? { Authorization: `Bearer ${cfg.apiKey}` } : {}),
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      temperature,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    }),
+    responseType: 'text',
+    timeoutMs: 120_000,
+  })
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error(`LLM 请求失败（HTTP ${res.status}）：${res.body.slice(0, 200)}`)
+  }
+  let content = ''
+  try {
+    const data = JSON.parse(res.body)
+    content = data?.choices?.[0]?.message?.content ?? ''
+  } catch {
+    throw new Error(`LLM 响应不是合法 JSON：${res.body.slice(0, 120)}`)
+  }
+  if (!content) throw new Error('LLM 返回空内容')
+  return content.trim()
+}
+
 /** 连接测试：一次极短调用 */
 export async function testLlm(cfg: LlmConfig): Promise<string> {
   const baseURL = cfg.baseURL.replace(/\/+$/, '')

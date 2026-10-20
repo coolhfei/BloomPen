@@ -1,5 +1,5 @@
 import type { BrandSystem, CopyBundle } from '../lib/types'
-import { ContourField, LogoMark, WaveLine } from './BrandMark'
+import { ContourField, LogoMark, MotifDecor } from './BrandMark'
 
 interface Props {
   brand: BrandSystem
@@ -28,7 +28,7 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
           ) : (
             <div className="bf-cover-hero-fallback">
               <ContourField seed={5} color={brand.colors.primary} opacity={0.4} />
-              <WaveLine width={360} height={64} color={brand.colors.accent} />
+              <MotifDecor width={360} height={64} color={brand.colors.accent} brand={brand} />
             </div>
           )}
         </div>
@@ -61,7 +61,7 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
             </div>
           )}
           <div className="bf-intro-wave">
-            <WaveLine width={620} height={28} color={brand.colors.secondary} />
+            <MotifDecor width={620} height={28} color={brand.colors.secondary} brand={brand} />
           </div>
           <ul className="bf-manifesto">
             {copy.manifesto.map((m, i) => (
@@ -147,7 +147,7 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
           <h2 className="bf-back-headline">{copy.cta.headline}</h2>
           <p className="bf-back-sub">{copy.cta.sub}</p>
           <div className="bf-back-wave">
-            <WaveLine width={420} height={26} color={brand.colors.accent} />
+            <MotifDecor width={420} height={26} color={brand.colors.accent} brand={brand} />
           </div>
           <p className="bf-back-slogan-en">{brand.slogan.en}</p>
         </div>

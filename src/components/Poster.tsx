@@ -1,5 +1,5 @@
 import type { BrandSystem, CopyBundle } from '../lib/types'
-import { ContourField, LogoMark, WaveLine } from './BrandMark'
+import { ContourField, LogoMark, MotifDecor } from './BrandMark'
 
 interface Props {
   brand: BrandSystem
@@ -30,7 +30,7 @@ export function Poster({ brand, copy, heroUrl }: Props) {
         <h1 className="bf-poster-name">{brand.brandName}</h1>
         <p className="bf-poster-slogan">{brand.slogan.zh}</p>
         <div className="bf-poster-wave">
-          <WaveLine width={300} height={22} color={brand.colors.accent} />
+          <MotifDecor width={300} height={22} color={brand.colors.accent} brand={brand} />
         </div>
         <p className="bf-poster-quote">「{copy.quotes[1]?.text ?? copy.manifesto[0]}」</p>
       </div>

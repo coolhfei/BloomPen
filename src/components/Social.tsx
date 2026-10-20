@@ -1,5 +1,5 @@
 import type { BrandSystem, CopyBundle } from '../lib/types'
-import { ContourField, LogoMark, WaveLine } from './BrandMark'
+import { ContourField, LogoMark, MotifDecor } from './BrandMark'
 
 interface Props {
   brand: BrandSystem
@@ -18,7 +18,7 @@ export function QuoteCard({ brand, copy }: Props) {
       </header>
       <p className="bf-quote-card-text">「{quote.text}」</p>
       <div className="bf-quote-card-wave">
-        <WaveLine width={280} height={20} color={brand.colors.accent} />
+        <MotifDecor width={280} height={20} color={brand.colors.accent} brand={brand} />
       </div>
       <footer className="bf-quote-card-foot">
         <cite>—— {quote.source}</cite>
@@ -70,7 +70,7 @@ export function BannerCard({ brand, copy }: Props) {
         </div>
       </div>
       <div className="bf-banner-mid">
-        <WaveLine width={360} height={26} color={brand.colors.accent} />
+        <MotifDecor width={360} height={26} color={brand.colors.accent} brand={brand} />
         <div className="bf-banner-tags">
           {copy.pillars.map((p, i) => (
             <span className="bf-banner-tag" key={i}>

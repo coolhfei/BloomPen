@@ -29,6 +29,14 @@
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
+/* 内容型页面（P2/P3/P4）纵向撑满，杜绝下半页空白 */
+.bf-intro,
+.bf-pillars,
+.bf-programs {
+  display: flex;
+  flex-direction: column;
+}
+
 .bf-page-head {
   display: flex;
   align-items: center;
@@ -168,11 +176,15 @@
 
 /* ── P2 简介 ─────────────────────────────── */
 .bf-intro-body {
-  padding: 56px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 56px 92px;
 }
 .bf-intro-text {
-  font-size: 19px;
-  line-height: 2.1;
+  font-size: 20px;
+  line-height: 2.15;
   text-align: justify;
   color: var(--brand-ink);
 }
@@ -186,13 +198,14 @@
   color: var(--brand-accent);
 }
 .bf-intro-wave {
-  margin: 44px 0 40px;
+  margin: 36px 0;
 }
 .bf-manifesto {
   list-style: none;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  justify-content: space-evenly;
 }
 .bf-manifesto li {
   display: flex;
@@ -208,11 +221,11 @@
 .bf-manifesto-text {
   font-family: var(--font-display, serif);
   font-weight: 500;
-  font-size: 25px;
-  line-height: 1.6;
+  font-size: 26px;
+  line-height: 1.7;
   letter-spacing: 0.04em;
   border-bottom: 1px solid color-mix(in srgb, var(--brand-secondary) 40%, transparent);
-  padding-bottom: 18px;
+  padding-bottom: 16px;
   flex: 1;
 }
 
@@ -251,17 +264,20 @@
 
 /* ── P3 内容矩阵 ─────────────────────────────── */
 .bf-pillar-list {
-  padding: 48px 56px 0;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  padding: 28px 56px 100px;
   position: relative;
   z-index: 1;
 }
 .bf-pillar {
+  flex: 1;
   display: flex;
   gap: 28px;
-  padding: 38px 0;
+  align-items: center;
+  padding: 20px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--brand-muted) 30%, transparent);
 }
 .bf-pillar:first-child {
@@ -293,13 +309,13 @@
 .bf-pillar-title {
   font-family: var(--font-display, serif);
   font-weight: var(--font-display-weight, 700);
-  font-size: 32px;
+  font-size: 36px;
   letter-spacing: 0.05em;
   margin-bottom: 14px;
 }
 .bf-pillar-desc {
-  font-size: 15.5px;
-  line-height: 1.95;
+  font-size: 17px;
+  line-height: 2.05;
   color: color-mix(in srgb, var(--brand-ink) 78%, var(--brand-muted));
   text-align: justify;
 }
@@ -318,15 +334,18 @@
 
 /* ── P4 排期 ─────────────────────────────── */
 .bf-program-list {
-  padding: 48px 56px 0;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  padding: 28px 56px 0;
 }
 .bf-program {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 26px 0;
+  padding: 18px 0;
   border-bottom: 1px dashed color-mix(in srgb, var(--brand-muted) 45%, transparent);
 }
 .bf-program-no {
@@ -342,13 +361,13 @@
 .bf-program-title {
   font-family: var(--font-display, serif);
   font-weight: var(--font-display-weight, 700);
-  font-size: 25px;
+  font-size: 28px;
   letter-spacing: 0.04em;
 }
 .bf-program-sub {
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: var(--brand-muted);
-  margin-top: 5px;
+  margin-top: 6px;
 }
 .bf-program-date {
   font-family: 'IBM Plex Mono', monospace;
@@ -357,7 +376,7 @@
   color: var(--brand-primary);
 }
 .bf-quote-strip {
-  margin: 46px 56px 0;
+  margin: 40px 56px 92px;
   padding: 30px 34px;
   background: var(--brand-primary);
   color: var(--brand-paper);

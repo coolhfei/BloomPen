@@ -4,7 +4,7 @@ import { Stage, type Tab } from './components/Stage'
 import { TokenInspector } from './components/TokenInspector'
 import { SettingsModal } from './components/SettingsModal'
 import { DEMO_BRIEFS, DEMO_RESULT } from './lib/demoData'
-import { editBrandTokens, runPipeline } from './lib/orchestrator'
+import { editBrandTokens, optimizeBrief, runPipeline } from './lib/orchestrator'
 import { applyBrand } from './lib/tokens'
 import { llmReady, loadSettings, saveSettings } from './lib/providers/config'
 import type { AppSettings } from './lib/providers/types'
@@ -32,6 +32,8 @@ export default function App() {
   const [flash, setFlash] = useState(false)
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings())
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [optimizing, setOptimizing] = useState(false)
+  const [originalBrief, setOriginalBrief] = useState<string | null>(null)
   const toastId = useRef(0)
 
   const toast = useCallback((msg: string, err = false) => {
@@ -51,6 +53,26 @@ export default function App() {
   }, [result, brandVersion])
 
   const emit = useCallback((e: AgentEvent) => setEvents((prev) => [...prev, e]), [])
+
+  const onOptimizeBrief = async () => {
+    if (!brief.trim() || optimizing || phase === 'running') return
+    if (!llmReady(settings)) {
+      toast('请先在「模型设置」中配置文本模型', true)
+      setSettingsOpen(true)
+      return
+    }
+    setOptimizing(true)
+    try {
+      const optimized = await optimizeBrief(brief.trim(), settings)
+      setOriginalBrief(brief)
+      setBrief(optimized)
+      toast('简报已优化，可继续手动微调；不满意可恢复原文')
+    } catch (e) {
+      toast(`简报优化失败：${(e as Error).message}`, true)
+    } finally {
+      setOptimizing(false)
+    }
+  }
 
   const run = async () => {
     if (!brief.trim() || phase === 'running') return
@@ -130,7 +152,15 @@ export default function App() {
                 ))}
               </div>
             )}
+            {originalBrief && brief !== originalBrief && (
+              <button className="brief-undo" onClick={() => setBrief(originalBrief)}>
+                ↩ 恢复原文
+              </button>
+            )}
           </div>
+          <button className="btn" onClick={onOptimizeBrief} disabled={optimizing || running || !brief.trim()}>
+            {optimizing ? '✨ 优化中…' : '✨ 优化简报'}
+          </button>
           <button className="btn btn-primary" onClick={run} disabled={running || !brief.trim()}>
             {running ? '⚙ Agent 协作中…' : '⚡ 生成物料包'}
           </button>
