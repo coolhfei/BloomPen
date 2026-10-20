@@ -1,0 +1,34 @@
+appId: dev.brandforge.desktop
+productName: BrandForge
+copyright: Copyright © 2026 BrandForge contributors · AGPL-3.0
+
+directories:
+  output: release
+
+files:
+  - dist/**
+  - electron/**
+  - package.json
+
+asar: true
+
+win:
+  target:
+    - nsis
+  artifactName: BrandForge-${version}-win-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: BrandForge
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.graphics-design
+
+linux:
+  target:
+    - AppImage
+  category: Graphics

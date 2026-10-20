@@ -1,0 +1,42 @@
+{
+  "name": "brandforge",
+  "private": true,
+  "version": "0.1.0",
+  "description": "一句话生成整套品牌视觉物料（宣传册/海报/社媒套图）。本地优先、模型自配、AGPL-3.0 开源客户端。",
+  "license": "AGPL-3.0-only",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "electron:start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win"
+  },
+  "dependencies": {
+    "@fontsource-variable/noto-sans-sc": "^5.2.8",
+    "@fontsource-variable/noto-serif-sc": "^5.2.8",
+    "@fontsource/ibm-plex-mono": "^5.2.8",
+    "@fontsource/long-cang": "^5.2.8",
+    "@fontsource/ma-shan-zheng": "^5.2.8",
+    "@fontsource/zcool-qingke-huangyou": "^5.2.8",
+    "@fontsource/zcool-xiaowei": "^5.2.8",
+    "html-to-image": "^1.11.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "~5.6.3",
+    "vite": "^5.4.11",
+    "wait-on": "^8.0.1"
+  }
+}

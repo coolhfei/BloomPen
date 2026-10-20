@@ -1,0 +1,778 @@
+/* ═══════════════════════════════════════════════════════════
+   物料模板样式 —— 全部由品牌 token（CSS 变量）驱动
+   页面尺寸按 96dpi：A4 = 794×1123px，打印时恰好铺满 @page A4
+   ═══════════════════════════════════════════════════════════ */
+
+.bf-en {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* 宣传册容器：屏幕上 3+2 两行排布，一眼看全整套（打印导出时逐页克隆，不受此布局影响） */
+.bf-brochure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+/* ── 通用页面骨架 ─────────────────────────────── */
+.bf-page {
+  width: 794px;
+  height: 1123px;
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-paper, #f6f1e6);
+  color: var(--brand-ink, #1c1a17);
+  font-family: var(--font-body, 'Noto Sans SC', sans-serif);
+  flex: none;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.bf-page-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 44px 56px 0;
+}
+.bf-page-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px;
+  color: var(--brand-accent);
+  letter-spacing: 0.1em;
+}
+.bf-page-title {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 20px;
+  flex: 1;
+}
+.bf-page-foot {
+  position: absolute;
+  left: 56px;
+  right: 56px;
+  bottom: 34px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--brand-muted);
+  border-top: 1px solid color-mix(in srgb, var(--brand-muted) 35%, transparent);
+  padding-top: 12px;
+}
+
+/* ── P1 封面 ─────────────────────────────── */
+.bf-cover {
+  display: flex;
+  flex-direction: column;
+  padding: 48px 56px 0;
+}
+.bf-cover-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.bf-cover-brandline {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.bf-cover-brandline .bf-en {
+  font-size: 15px;
+  color: var(--brand-ink);
+}
+.bf-cat {
+  font-size: 12px;
+  color: var(--brand-muted);
+  letter-spacing: 0.08em;
+}
+.bf-cover-no {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--brand-paper);
+  background: var(--brand-primary);
+  padding: 7px 14px;
+  border-radius: 2px;
+}
+.bf-cover-hero {
+  margin: 34px 0 0;
+  height: 560px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: var(--brand-primary);
+}
+.bf-cover-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bf-cover-hero-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(120% 90% at 20% 10%, color-mix(in srgb, var(--brand-secondary) 55%, var(--brand-primary)) 0%, var(--brand-primary) 60%);
+}
+.bf-cover-hero-fallback .bf-contour {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.bf-cover-bottom {
+  margin-top: auto;
+  padding-bottom: 54px;
+}
+.bf-cover-name {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 108px;
+  line-height: 1.04;
+  letter-spacing: 0.06em;
+  color: var(--brand-ink);
+}
+.bf-cover-slogan {
+  margin-top: 14px;
+  font-family: var(--font-display, serif);
+  font-weight: 500;
+  font-size: 26px;
+  letter-spacing: 0.22em;
+  color: var(--brand-primary);
+}
+.bf-cover-slogan-en {
+  margin-top: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--brand-muted);
+}
+.bf-cover-side {
+  position: absolute;
+  right: -86px;
+  top: 480px;
+  transform: rotate(90deg);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--brand-muted);
+  white-space: nowrap;
+}
+
+/* ── P2 简介 ─────────────────────────────── */
+.bf-intro-body {
+  padding: 56px;
+}
+.bf-intro-text {
+  font-size: 19px;
+  line-height: 2.1;
+  text-align: justify;
+  color: var(--brand-ink);
+}
+.bf-intro-text::first-letter {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 62px;
+  float: left;
+  line-height: 1;
+  margin: 6px 12px 0 0;
+  color: var(--brand-accent);
+}
+.bf-intro-wave {
+  margin: 44px 0 40px;
+}
+.bf-manifesto {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.bf-manifesto li {
+  display: flex;
+  gap: 22px;
+  align-items: baseline;
+}
+.bf-manifesto-idx {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--brand-accent);
+  flex: none;
+}
+.bf-manifesto-text {
+  font-family: var(--font-display, serif);
+  font-weight: 500;
+  font-size: 25px;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-secondary) 40%, transparent);
+  padding-bottom: 18px;
+  flex: 1;
+}
+
+/* ── P3 内容矩阵 ─────────────────────────────── */
+.bf-pillar-list {
+  padding: 48px 56px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  z-index: 1;
+}
+.bf-pillar {
+  display: flex;
+  gap: 28px;
+  padding: 38px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-muted) 30%, transparent);
+}
+.bf-pillar:first-child {
+  border-top: 3px solid var(--brand-primary);
+}
+.bf-pillar-left {
+  width: 92px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bf-pillar-idx {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 34px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--brand-primary) 30%, transparent);
+  line-height: 1;
+}
+.bf-pillar-tag {
+  align-self: flex-start;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--brand-paper);
+  background: var(--brand-accent);
+  padding: 5px 10px;
+  border-radius: 2px;
+}
+.bf-pillar-title {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 32px;
+  letter-spacing: 0.05em;
+  margin-bottom: 14px;
+}
+.bf-pillar-desc {
+  font-size: 15.5px;
+  line-height: 1.95;
+  color: color-mix(in srgb, var(--brand-ink) 78%, var(--brand-muted));
+  text-align: justify;
+}
+.bf-pillars-deco {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  height: 200px;
+  pointer-events: none;
+}
+.bf-pillars-deco .bf-contour {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── P4 排期 ─────────────────────────────── */
+.bf-program-list {
+  padding: 48px 56px 0;
+  display: flex;
+  flex-direction: column;
+}
+.bf-program {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 26px 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--brand-muted) 45%, transparent);
+}
+.bf-program-no {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: var(--brand-accent);
+  width: 58px;
+  flex: none;
+}
+.bf-program-main {
+  flex: 1;
+}
+.bf-program-title {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 25px;
+  letter-spacing: 0.04em;
+}
+.bf-program-sub {
+  font-size: 13.5px;
+  color: var(--brand-muted);
+  margin-top: 5px;
+}
+.bf-program-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--brand-primary);
+}
+.bf-quote-strip {
+  margin: 46px 56px 0;
+  padding: 30px 34px;
+  background: var(--brand-primary);
+  color: var(--brand-paper);
+  border-radius: 3px;
+  position: relative;
+}
+.bf-quote-strip p {
+  font-family: var(--font-display, serif);
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+.bf-quote-strip cite {
+  display: block;
+  margin-top: 12px;
+  font-style: normal;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--brand-paper) 70%, transparent);
+}
+
+/* ── P5 封底 ─────────────────────────────── */
+.bf-back {
+  background: var(--brand-ink);
+  color: var(--brand-paper);
+  display: flex;
+  flex-direction: column;
+}
+.bf-back-deco {
+  position: absolute;
+  inset: 0;
+}
+.bf-back-deco .bf-contour {
+  width: 100%;
+  height: 100%;
+}
+.bf-back-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 90px;
+  gap: 0;
+}
+.bf-back-headline {
+  margin-top: 40px;
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 46px;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+}
+.bf-back-sub {
+  margin-top: 18px;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--brand-paper) 72%, transparent);
+}
+.bf-back-wave {
+  margin-top: 44px;
+}
+.bf-back-slogan-en {
+  margin-top: 40px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+}
+.bf-back-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 56px 34px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--brand-paper) 55%, transparent);
+}
+
+/* ── 海报 800×1200 ─────────────────────────────── */
+.bf-poster {
+  width: 800px;
+  height: 1200px;
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-primary);
+  color: var(--brand-paper);
+  font-family: var(--font-body, sans-serif);
+  flex: none;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.bf-poster-hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bf-poster-hero-fallback {
+  background:
+    radial-gradient(130% 100% at 80% 0%, color-mix(in srgb, var(--brand-secondary) 60%, var(--brand-primary)) 0%, var(--brand-primary) 55%);
+}
+.bf-poster-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--brand-ink) 55%, transparent) 0%,
+      transparent 30%,
+      transparent 45%,
+      color-mix(in srgb, var(--brand-ink) 82%, transparent) 100%);
+}
+.bf-poster-top {
+  position: absolute;
+  top: 40px;
+  left: 44px;
+  right: 44px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 2;
+}
+.bf-poster-topline {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.bf-poster-topline .bf-en {
+  font-size: 14px;
+}
+.bf-poster-cat {
+  font-size: 11.5px;
+  opacity: 0.75;
+  letter-spacing: 0.1em;
+}
+.bf-poster-main {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  bottom: 130px;
+  z-index: 2;
+}
+.bf-poster-name {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 92px;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+}
+.bf-poster-slogan {
+  margin-top: 16px;
+  font-family: var(--font-display, serif);
+  font-weight: 500;
+  font-size: 30px;
+  letter-spacing: 0.24em;
+}
+.bf-poster-wave {
+  margin: 26px 0 22px;
+}
+.bf-poster-quote {
+  font-size: 15px;
+  line-height: 1.9;
+  opacity: 0.85;
+  letter-spacing: 0.05em;
+  max-width: 560px;
+}
+.bf-poster-foot {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  bottom: 40px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid color-mix(in srgb, var(--brand-paper) 30%, transparent);
+  padding-top: 16px;
+}
+.bf-poster-cta {
+  font-size: 13.5px;
+  letter-spacing: 0.1em;
+}
+.bf-poster-slogan-en {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+}
+
+/* ── 社媒三件套 ─────────────────────────────── */
+.bf-social-grid {
+  display: flex;
+  gap: 36px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.bf-social-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bf-social-caption {
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--ui-text-dim, #9a928a);
+  max-width: 360px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+/* 方图引用卡 1080×1080 */
+.bf-sq {
+  width: 1080px;
+  height: 1080px;
+}
+.bf-quote-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-paper);
+  color: var(--brand-ink);
+  font-family: var(--font-body, sans-serif);
+  padding: 76px;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+.bf-quote-card-top {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.bf-quote-card-top .bf-en {
+  font-size: 22px;
+  color: var(--brand-muted);
+}
+.bf-quote-card-text {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 66px;
+  line-height: 1.65;
+  letter-spacing: 0.04em;
+  color: var(--brand-primary);
+}
+.bf-quote-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px solid var(--brand-accent);
+  padding-top: 30px;
+}
+.bf-quote-card-foot cite {
+  font-style: normal;
+  font-size: 26px;
+  color: var(--brand-muted);
+  letter-spacing: 0.1em;
+}
+.bf-quote-card-tag {
+  font-size: 26px;
+  color: var(--brand-accent);
+  letter-spacing: 0.08em;
+}
+
+/* 竖图节目卡 1080×1440 */
+.bf-vt {
+  width: 1080px;
+  height: 1440px;
+}
+.bf-program-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-paper);
+  font-family: var(--font-body, sans-serif);
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+.bf-program-card-hero {
+  height: 810px;
+  position: relative;
+  background: var(--brand-primary);
+  overflow: hidden;
+}
+.bf-program-card-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bf-program-card-hero-fallback {
+  position: absolute;
+  inset: 0;
+}
+.bf-program-card-hero-fallback .bf-contour {
+  width: 100%;
+  height: 100%;
+}
+.bf-program-card-no {
+  position: absolute;
+  top: 44px;
+  left: 48px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 30px;
+  letter-spacing: 0.1em;
+  color: var(--brand-paper);
+  background: var(--brand-accent);
+  padding: 10px 22px;
+  border-radius: 3px;
+}
+.bf-program-card-body {
+  flex: 1;
+  padding: 60px 64px;
+  display: flex;
+  flex-direction: column;
+  color: var(--brand-ink);
+}
+.bf-program-card-title {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 84px;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+.bf-program-card-sub {
+  margin-top: 20px;
+  font-size: 34px;
+  color: var(--brand-muted);
+  letter-spacing: 0.12em;
+}
+.bf-program-card-meta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 28px;
+  color: var(--brand-ink);
+  border-top: 2px solid color-mix(in srgb, var(--brand-muted) 35%, transparent);
+  padding-top: 36px;
+}
+.bf-program-card-date {
+  margin-left: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--brand-accent);
+}
+
+/* 横图 Banner 1920×1080 */
+.bf-bn {
+  width: 1920px;
+  height: 1080px;
+}
+.bf-banner {
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-primary);
+  color: var(--brand-paper);
+  font-family: var(--font-body, sans-serif);
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  padding: 0 110px;
+  flex: none;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+.bf-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(90% 120% at 85% 20%, color-mix(in srgb, var(--brand-secondary) 45%, transparent) 0%, transparent 55%);
+}
+.bf-banner-left,
+.bf-banner-mid,
+.bf-banner-right {
+  position: relative;
+  z-index: 1;
+}
+.bf-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  flex: none;
+}
+.bf-banner-name {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 76px;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+}
+.bf-banner-name .bf-en {
+  display: block;
+  font-size: 22px;
+  opacity: 0.72;
+  margin-top: 10px;
+}
+.bf-banner-slogan {
+  margin-top: 18px;
+  font-size: 30px;
+  letter-spacing: 0.2em;
+  color: var(--brand-accent);
+  font-family: var(--font-display, serif);
+}
+.bf-banner-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+}
+.bf-banner-tags {
+  display: flex;
+  gap: 24px;
+}
+.bf-banner-tag {
+  font-size: 27px;
+  letter-spacing: 0.08em;
+  border: 2px solid color-mix(in srgb, var(--brand-paper) 45%, transparent);
+  padding: 14px 30px;
+  border-radius: 999px;
+}
+.bf-banner-right {
+  flex: none;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 460px;
+}
+.bf-banner-cta {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 44px;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+}
+.bf-banner-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--brand-paper) 75%, transparent);
+}

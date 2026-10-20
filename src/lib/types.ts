@@ -1,0 +1,92 @@
+/** 品牌视觉系统 —— 整套物料的唯一事实来源（Design Rails 式结构化品牌文件） */
+export interface BrandSystem {
+  brandName: string
+  brandNameEn: string
+  category: string
+  colors: {
+    /** 主色 */
+    primary: string
+    /** 辅色 */
+    secondary: string
+    /** 点缀色（高饱和，小面积使用） */
+    accent: string
+    /** 正文墨色 */
+    ink: string
+    /** 纸面底色 */
+    paper: string
+    /** 弱化灰 */
+    muted: string
+  }
+  fonts: {
+    /** 标题字体（从 FONT_MENU 中选） */
+    display: string
+    /** 正文字体（从 FONT_MENU 中选） */
+    body: string
+    /** 标题字重 300-900 */
+    displayWeight: number
+  }
+  slogan: { zh: string; en: string }
+  /** 品牌语气关键词，3-5 个 */
+  tone: string[]
+  /** 视觉母题描述（用于装饰图形与生图提示词），2-4 个 */
+  motifs: string[]
+  /** 主视觉生图提示词（由品牌系统 Agent 产出） */
+  heroPrompt: string
+}
+
+/** 文案包 —— 文案 Agent 产出 */
+export interface CopyBundle {
+  /** 品牌简介，80-120 字 */
+  intro: string
+  /** 品牌宣言，3 句短句 */
+  manifesto: string[]
+  /** 内容矩阵 3-4 项 */
+  pillars: { tag: string; title: string; desc: string }[]
+  /** 金句 2 条（社媒引用卡） */
+  quotes: { text: string; source: string }[]
+  /** 上市排期节目/书目 4 条 */
+  programs: { no: string; title: string; subtitle: string; date: string }[]
+  /** 行动号召 */
+  cta: { headline: string; sub: string }
+  /** 社媒配文 3 条，对应方图/竖图/横图 */
+  socialCaptions: { title: string; body: string }[]
+}
+
+export interface GenResult {
+  brief: string
+  brand: BrandSystem
+  copy: CopyBundle
+  /** 英雄图地址（同源代理路径或 dataURL），可能为 null（生图失败兜底） */
+  heroUrl: string | null
+  savedAt: number
+}
+
+/** LLM 返回的 token 补丁（框选编辑） */
+export type BrandPatch = {
+  colors?: Partial<BrandSystem['colors']>
+  fonts?: Partial<BrandSystem['fonts']>
+  slogan?: Partial<BrandSystem['slogan']>
+  tone?: string[]
+  motifs?: string[]
+}
+
+export type AgentId = 'brand' | 'copy' | 'visual' | 'layout' | 'social'
+
+export type AgentStatus = 'idle' | 'running' | 'done' | 'error'
+
+export interface AgentEvent {
+  agent: AgentId
+  type: 'status' | 'log' | 'error'
+  status?: AgentStatus
+  message?: string
+}
+
+/** 品牌字体菜单：LLM 只能从中选择，保证字体已预加载且渲染稳定 */
+export const FONT_MENU = [
+  { id: 'Noto Serif SC', label: '思源宋体', feel: '人文衬线，庄重而有书卷气' },
+  { id: 'ZCOOL XiaoWei', label: '站酷小薇', feel: '纤细优雅，文艺轻盈' },
+  { id: 'Noto Sans SC', label: '思源黑体', feel: '现代无衬线，干净利落' },
+  { id: 'ZCOOL QingKe HuangYou', label: '站酷庆科黄油', feel: '厚重圆润，年轻有冲击力' },
+  { id: 'Ma Shan Zheng', label: '马善政楷书', feel: '手写楷书法度，东方气韵' },
+  { id: 'Long Cang', label: '龙藏体', feel: '随性手写，自由不羁' },
+] as const
