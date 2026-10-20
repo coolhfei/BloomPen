@@ -157,20 +157,6 @@ body::after {
   padding: 6px 12px;
   font-size: 12px;
 }
-.demo-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-dim);
-  cursor: pointer;
-  user-select: none;
-  flex: none;
-}
-.demo-toggle input {
-  accent-color: var(--amber);
-}
 .brief-chips {
   position: absolute;
   top: calc(100% + 6px);

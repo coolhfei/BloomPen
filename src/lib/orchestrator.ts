@@ -7,6 +7,7 @@ import {
   buildBrandUserPrompt,
   buildCopyUserPrompt,
   buildPatchUserPrompt,
+  clampPatchColors,
   COPY_PROMPT,
   PATCH_SYSTEM_PROMPT,
 } from './prompts'
@@ -85,40 +86,6 @@ export async function runPipeline(brief: string, emit: Emit, settings: AppSettin
   return { brief, brand, copy, heroUrl: hero, savedAt: Date.now() }
 }
 
-/** 演示模式：回放缓存结果，模拟流式过程（离线可用） */
-export async function replayPipeline(cached: GenResult, emit: Emit): Promise<GenResult> {
-  const steps: [AgentId, string, number][] = [
-    ['brand', '解析品牌简报…', 700],
-    ['brand', `锁定视觉系统 · 主色 ${cached.brand.colors.primary} · ${cached.brand.slogan.zh}`, 900],
-    ['copy', '按品牌语气撰写中英文文案…', 1100],
-    ['visual', '构造主视觉提示词…', 300],
-    ['visual', '缓存回放主视觉', 1400],
-    ['copy', `文案就绪 · ${cached.copy.pillars.length} 大内容板块 · ${cached.copy.programs.length} 档节目`, 500],
-    ['layout', '宣传册 5 页排版完成 · 封面 / 简介 / 内容矩阵 / 排期 / 封底', 900],
-    ['visual', '主视觉生成完成', 200],
-    ['social', '输出 1:1 引用卡 · 3:4 节目卡 · 16:9 Banner', 700],
-  ]
-  emit({ agent: 'brand', type: 'status', status: 'running' })
-  for (const [agent, message, delay] of steps) {
-    await sleep(delay)
-    emit({ agent, type: 'log', message })
-    if (message.includes('锁定')) {
-      emit({ agent: 'brand', type: 'status', status: 'done' })
-      emit({ agent: 'copy', type: 'status', status: 'running' })
-      emit({ agent: 'visual', type: 'status', status: 'running' })
-      emit({ agent: 'layout', type: 'status', status: 'running' })
-    }
-    if (message.includes('文案就绪')) {
-      emit({ agent: 'copy', type: 'status', status: 'done' })
-      emit({ agent: 'social', type: 'status', status: 'running' })
-    }
-    if (message.includes('排版完成')) emit({ agent: 'layout', type: 'status', status: 'done' })
-    if (message.includes('主视觉生成完成')) emit({ agent: 'visual', type: 'status', status: 'done' })
-    if (message.includes('1:1')) emit({ agent: 'social', type: 'status', status: 'done' })
-  }
-  return { ...cached, savedAt: Date.now() }
-}
-
 /** 框选编辑：自然语言 → token 补丁 → 新品牌系统 */
 export async function editBrandTokens(
   instruction: string,
@@ -126,12 +93,13 @@ export async function editBrandTokens(
   selectedText: string,
   settings: AppSettings
 ): Promise<{ patch: BrandPatch; next: BrandSystem; explain: string }> {
-  const patch = await chatJSON<BrandPatch>(
+  const rawPatch = await chatJSON<BrandPatch>(
     settings.llm,
     PATCH_SYSTEM_PROMPT,
     buildPatchUserPrompt(instruction, brand, selectedText),
     0.3
   )
+  const patch = clampPatchColors(rawPatch, brand, instruction)
   const next = applyPatch(brand, patch)
   const changed: string[] = []
   if (patch.colors) for (const k of Object.keys(patch.colors)) changed.push(`colors.${k}`)

@@ -4,8 +4,7 @@ import { Stage, type Tab } from './components/Stage'
 import { TokenInspector } from './components/TokenInspector'
 import { SettingsModal } from './components/SettingsModal'
 import { DEMO_BRIEFS, DEMO_RESULT } from './lib/demoData'
-import { loadResult, saveResult } from './lib/cache'
-import { editBrandTokens, replayPipeline, runPipeline } from './lib/orchestrator'
+import { editBrandTokens, runPipeline } from './lib/orchestrator'
 import { applyBrand } from './lib/tokens'
 import { llmReady, loadSettings, saveSettings } from './lib/providers/config'
 import type { AppSettings } from './lib/providers/types'
@@ -23,8 +22,6 @@ export default function App() {
   const [brief, setBrief] = useState(DEMO_BRIEFS[0])
   const [showChips, setShowChips] = useState(false)
   const [phase, setPhase] = useState<Phase>('idle')
-  const [demoMode, setDemoMode] = useState(false)
-  const [hasCache, setHasCache] = useState(false)
   const [result, setResult] = useState<GenResult>(DEMO_RESULT)
   const [brandVersion, setBrandVersion] = useState(0)
   const [events, setEvents] = useState<AgentEvent[]>([])
@@ -36,7 +33,6 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings())
   const [settingsOpen, setSettingsOpen] = useState(false)
   const toastId = useRef(0)
-  const cachedRef = useRef<GenResult | null>(null)
 
   const toast = useCallback((msg: string, err = false) => {
     const id = ++toastId.current
@@ -44,18 +40,9 @@ export default function App() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), err ? 6000 : 3200)
   }, [])
 
-  // 初始：品牌 token 上树 + 读取缓存
+  // 初始：品牌 token 上树，首屏即可探索 UI
   useEffect(() => {
     applyBrand(DEMO_RESULT.brand)
-    loadResult().then((cached) => {
-      if (cached) {
-        cachedRef.current = cached
-        setHasCache(true)
-        setResult(cached)
-        applyBrand(cached.brand)
-        setPhase('ready')
-      }
-    })
   }, [])
 
   // 品牌 token 始终与当前 result 同步（一处修改、全局一致的根基）
@@ -67,7 +54,7 @@ export default function App() {
 
   const run = async () => {
     if (!brief.trim() || phase === 'running') return
-    if (!demoMode && !llmReady(settings)) {
+    if (!llmReady(settings)) {
       toast('请先在「模型设置」中配置文本模型（本地 Ollama 或云端兼容端点）', true)
       setSettingsOpen(true)
       return
@@ -77,28 +64,16 @@ export default function App() {
     setEditMode(false)
     setTab('brochure')
     try {
-      let res: GenResult
-      if (demoMode && cachedRef.current) {
-        res = await replayPipeline({ ...cachedRef.current, brief }, emit)
-      } else {
-        res = await runPipeline(brief.trim(), emit, settings)
-      }
+      const res = await runPipeline(brief.trim(), emit, settings)
       setResult(res)
       setBrandVersion((v) => v + 1)
       setPhase('ready')
-      if (!demoMode) {
-        cachedRef.current = res
-        setHasCache(true)
-        void saveResult(res)
-        toast('整套物料已生成 · 已写入缓存（可开启演示模式回放）')
-      } else {
-        toast('演示模式回放完成（未调用线上 API）')
-      }
+      toast('整套物料已生成 · 可框选编辑或导出')
     } catch (e) {
       const msg = (e as Error).message
       setPhase('error')
       emit({ agent: 'brand', type: 'error', message: msg })
-      toast(`生成失败：${msg}。可开启「演示模式」回放缓存结果。`, true)
+      toast(`生成失败：${msg}`, true)
     }
   }
 
@@ -159,15 +134,6 @@ export default function App() {
           <button className="btn btn-primary" onClick={run} disabled={running || !brief.trim()}>
             {running ? '⚙ Agent 协作中…' : '⚡ 生成物料包'}
           </button>
-          <label className="demo-toggle" title="回放上次成功生成的缓存结果，不调用模型">
-            <input
-              type="checkbox"
-              checked={demoMode}
-              disabled={!hasCache}
-              onChange={(e) => setDemoMode(e.target.checked)}
-            />
-            演示模式{hasCache ? '' : '（无缓存）'}
-          </label>
           <button className="btn btn-sm" title="模型设置" onClick={() => setSettingsOpen(true)}>
             ⚙ 模型设置{llmReady(settings) ? '' : ' !'}
           </button>

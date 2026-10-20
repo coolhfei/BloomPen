@@ -1,4 +1,5 @@
 import { FONT_MENU, type BrandPatch, type BrandSystem, type CopyBundle } from './types'
+import { hexToHsl, hslToHex } from './tokens'
 
 const fontMenuText = FONT_MENU.map((f) => `- "${f.id}"（${f.label}：${f.feel}）`).join('\n')
 
@@ -32,9 +33,14 @@ export const BRAND_SYSTEM_PROMPT = `你是一家顶级品牌咨询公司的品�
 ${fontMenuText}
 
 配色要求：
-- 六个颜色必须整体协调，符合品牌气质，避免默认蓝紫色等 AI 俗套配色
-- ink 与 paper 之间必须有足够对比度（正文可读性）
-- accent 与 primary 形成张力但不过分刺眼
+- 六个颜色必须整体协调，符合品牌气质
+- **严禁 AI 默认色**：primary/secondary/accent 不得落在高饱和蓝紫区（色相 230°-270° 且饱和度 >55% 的区域，
+  如 #6366F1、#4F46E5、#8B5CF6、#7C3AED 及其邻近色）。需要蓝色系时必须压饱和或偏灰偏深（如 #14406B、#4A6572）
+- 六个颜色必须属于同一套配色逻辑：primary 与 secondary 色相差 ≤60°（同族层次）或明度层次；
+  accent 允许对比色相，但饱和度需克制（≤85%），确保小面积使用不刺眼
+- ink 不得为纯黑（#000000），paper 不得为纯白（#FFFFFF）；两者都必须带轻微色倾向（暖或冷）
+- 可参考的配色方向（领会方法，勿照抄）：纸感暖白 + 墨绿 + 赭石；米白 + 绛红 + 旧金；
+  冷灰白 + 普鲁士蓝 + 柿橙；宣纸色 + 松烟墨 + 朱砂
 
 heroPrompt 要求：
 - 描述一张有艺术感的主视觉图，体现品牌气质与视觉母题
@@ -88,7 +94,14 @@ export const PATCH_SYSTEM_PROMPT = `你是品牌视觉系统的编辑 Agent。�
 ${fontMenuText}
 
 理解要求：
-- "主色向深绿偏移一档"这类相对描述，要基于当前色值计算出具体的新色值（如转深、转绿）
+- 所有颜色相对指令必须在 HSL 空间执行并输出计算后的具体 hex：
+  · "向 X 偏移/偏 X 一点" = 把 H 移入 X 色族的典型区间（朱红 5-15、橙 20-35、旧金 35-50、
+    深绿 140-160、草绿 90-120、钴蓝 205-220、普鲁士蓝 210-230 压饱和、绛红 340-355），
+    "一档"约束的是 S 与 L：两者相对当前值变化均 ≤10；除非指令同时提到深浅/灰艳
+  · "深一档/暗一点" = L -8~-15（H、S 不变）；"浅一档/亮一点" = L +8~+12（H、S 不变）
+  · "灰一点/柔一点" = S -10~-20（H、L 不变）；"艳一点/鲜明一点" = S +10~+20（H、L 不变）
+  · 复合指令按顺序叠加（如"向深绿偏移一档" = H 入 140-160 且 S/L 变化 ≤10）
+  · 未被指令提及的维度一律保持原值，禁止顺手调整
 - "更轻的字重"意味着 displayWeight 下调 1-2 档
 - 修改主色时，如果辅色/点缀色与主色同族，可一并微调保持协调，但不要过度修改
 - 输出必须是合法 JSON，即使只改一个字段`
@@ -107,4 +120,31 @@ export function applyPatch(brand: BrandSystem, patch: BrandPatch): BrandSystem {
     tone: patch.tone ?? brand.tone,
     motifs: patch.motifs ?? brand.motifs,
   }
+}
+
+// ── "一档"契约的代码侧强制 ─────────────────────────
+// 模型给色相方向（色族判断它做得对），S/L 的步长约束由代码兜底：
+// 指令未提及深浅/灰艳时，S 与 L 相对原值的变化强制 ≤10。
+
+const DEPTH_INTENT = /(调|变|更)?深(一点|一些|一档|些)|(调|变|更)?浅(一点|一些|一档|些)|暗(一点|一些|一档)|亮(一点|一些|一档)|(调|变)深|(调|变)浅|更深|更浅/
+const SAT_INTENT = /灰(一点|一些|一档)|更灰|柔(一点|一些|一档)|更柔|艳(一点|一些|一档)|更艳|鲜明|饱和/
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+
+export function clampPatchColors(patch: BrandPatch, brand: BrandSystem, instruction: string): BrandPatch {
+  if (!patch.colors) return patch
+  const allowL = DEPTH_INTENT.test(instruction)
+  const allowS = SAT_INTENT.test(instruction)
+  const out: Partial<BrandSystem['colors']> = {}
+  for (const [k, v] of Object.entries(patch.colors)) {
+    const key = k as keyof BrandSystem['colors']
+    const oldHex = brand.colors[key]
+    if (!v || !/^#[0-9a-fA-F]{6}$/.test(v) || !oldHex) continue
+    const [, os, ol] = hexToHsl(oldHex)
+    const [nh, ns, nl] = hexToHsl(v)
+    const fs = allowS ? ns : clamp(ns, os - 10, os + 10)
+    const fl = allowL ? nl : clamp(nl, ol - 10, ol + 10)
+    out[key] = hslToHex(nh, fs, fl)
+  }
+  return { ...patch, colors: out }
 }
