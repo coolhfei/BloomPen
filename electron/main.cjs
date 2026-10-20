@@ -100,7 +100,7 @@ ipcMain.handle('pdf:fromHtml', async (e, html, defaultName) => {
     const data = await win.webContents.printToPDF({
       printBackground: true,
       preferCSSPageSize: true,
-      marginsType: 0,
+      margins: { marginType: 'none' },
     })
     const sender = BrowserWindow.fromWebContents(e.sender)
     const { canceled, filePath } = await dialog.showSaveDialog(sender, {

@@ -8,7 +8,6 @@ import { loadResult, saveResult } from './lib/cache'
 import { editBrandTokens, replayPipeline, runPipeline } from './lib/orchestrator'
 import { applyBrand } from './lib/tokens'
 import { llmReady, loadSettings, saveSettings } from './lib/providers/config'
-import { isDesktop } from './lib/providers/transport'
 import type { AppSettings } from './lib/providers/types'
 import type { AgentEvent, GenResult } from './lib/types'
 
