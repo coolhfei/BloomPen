@@ -6,9 +6,11 @@ import {
   BRAND_SYSTEM_PROMPT,
   buildBrandUserPrompt,
   buildCopyUserPrompt,
+  buildDataPointsUserPrompt,
   buildPatchUserPrompt,
   clampPatchColors,
   COPY_PROMPT,
+  DATAPOINTS_PROMPT,
   PATCH_SYSTEM_PROMPT,
 } from './prompts'
 import type { AppSettings } from './providers/types'
@@ -42,8 +44,23 @@ export async function runPipeline(brief: string, emit: Emit, settings: AppSettin
   emit({ agent: 'copy', type: 'log', message: '按品牌语气撰写中英文文案…' })
   emit({ agent: 'visual', type: 'log', message: settings.image.kind === 'none' ? '生图已关闭 · 使用程序化视觉' : '构造主视觉提示词…' })
 
-  const copyPromise = chatJSON<CopyBundle>(llm, COPY_PROMPT, buildCopyUserPrompt(brief, brand), 0.9).then((copy) => {
+  const copyPromise = chatJSON<CopyBundle>(llm, COPY_PROMPT, buildCopyUserPrompt(brief, brand), 0.9).then(async (copy) => {
     validateCopy(copy)
+    // 数据钩子兜底：主调用漏字段时补一次轻量调用（保证内页数据带不空缺）
+    if (!copy.dataPoints?.length) {
+      try {
+        emit({ agent: 'copy', type: 'log', message: '补全品牌数据钩子…' })
+        const dp = await chatJSON<{ dataPoints: { value: string; label: string }[] }>(
+          llm,
+          DATAPOINTS_PROMPT,
+          buildDataPointsUserPrompt(brand, copy),
+          0.5
+        )
+        copy.dataPoints = (dp.dataPoints ?? []).slice(0, 3)
+      } catch {
+        copy.dataPoints = []
+      }
+    }
     emit({
       agent: 'copy',
       type: 'log',
@@ -128,6 +145,7 @@ function validateCopy(c: CopyBundle): void {
   c.pillars = c.pillars.slice(0, 3)
   c.programs = c.programs.slice(0, 4)
   c.quotes = (c.quotes ?? []).slice(0, 2)
+  c.dataPoints = (c.dataPoints ?? []).slice(0, 3)
   c.socialCaptions = (c.socialCaptions ?? []).slice(0, 3)
   c.manifesto = (c.manifesto ?? []).slice(0, 3)
 }

@@ -50,6 +50,16 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
         </header>
         <div className="bf-intro-body">
           <p className="bf-intro-text">{copy.intro}</p>
+          {copy.dataPoints?.length > 0 && (
+            <div className="bf-stats">
+              {copy.dataPoints.map((d, i) => (
+                <div className="bf-stat" key={i}>
+                  <span className="bf-stat-v">{d.value}</span>
+                  <span className="bf-stat-k">{d.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="bf-intro-wave">
             <WaveLine width={620} height={28} color={brand.colors.secondary} />
           </div>

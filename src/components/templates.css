@@ -216,6 +216,39 @@
   flex: 1;
 }
 
+/* 数据钩子装饰带（P2） */
+.bf-stats {
+  display: flex;
+  gap: 0;
+  margin: 38px 0 6px;
+  border-top: 3px solid var(--brand-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-muted) 35%, transparent);
+}
+.bf-stat {
+  flex: 1;
+  padding: 20px 8px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bf-stat + .bf-stat {
+  border-left: 1px solid color-mix(in srgb, var(--brand-muted) 30%, transparent);
+  padding-left: 26px;
+}
+.bf-stat-v {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 40px;
+  line-height: 1.1;
+  color: var(--brand-primary);
+  letter-spacing: 0.02em;
+}
+.bf-stat-k {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--brand-muted);
+}
+
 /* ── P3 内容矩阵 ─────────────────────────────── */
 .bf-pillar-list {
   padding: 48px 56px 0;

@@ -61,6 +61,42 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
     return () => ro.disconnect()
   }, [tab])
 
+  // ── 点击放大（Lightbox）─────────────────────────
+  const [zoom, setZoom] = useState<{ html: string; w: number; h: number; label: string } | null>(null)
+  const [zoomMode, setZoomMode] = useState<'fit' | 1 | 1.5>('fit')
+
+  useEffect(() => {
+    if (!zoom) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setZoom(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [zoom])
+
+  const openZoom = (e: React.MouseEvent) => {
+    if (editMode) return
+    const target = e.target as HTMLElement
+    const node = target.closest<HTMLElement>('.bf-page, .bf-poster, .bf-sq, .bf-vt, .bf-bn, .bf-sheet')
+    if (!node || node.closest('.lightbox-mask')) return
+    let label = '物料'
+    if (node.classList.contains('bf-page')) {
+      const idx = Array.from(node.parentElement?.children ?? []).indexOf(node) + 1
+      label = `宣传册 · 第 ${idx} 页`
+    } else if (node.classList.contains('bf-poster')) label = '主视觉海报'
+    else if (node.classList.contains('bf-sq')) label = '社媒方图 · 1080×1080'
+    else if (node.classList.contains('bf-vt')) label = '社媒竖图 · 1080×1440'
+    else if (node.classList.contains('bf-bn')) label = '社媒横图 · 1920×1080'
+    else if (node.classList.contains('bf-sheet')) label = '品牌视觉规范'
+    setZoomMode('fit')
+    setZoom({ html: node.outerHTML, w: node.offsetWidth, h: node.offsetHeight, label })
+  }
+
+  const fitScale = zoom
+    ? Math.min((window.innerWidth - 160) / zoom.w, (window.innerHeight - 160) / zoom.h, 1)
+    : 1
+  const zoomScale = zoomMode === 'fit' ? fitScale : zoomMode
+
   // ── 框选编辑 ─────────────────────────────
   const [rect, setRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
   const rectRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null)
@@ -198,6 +234,7 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
       <div
         ref={bodyRef}
         className={`stage-body ${editMode ? 'editing' : ''}`}
+        onClick={openZoom}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -281,6 +318,44 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
               <button className="btn btn-sm btn-primary" onClick={submitEdit} disabled={editing || !instruction.trim()}>
                 {editing ? '解析中…' : '应用修改 ⏎'}
               </button>
+            </div>
+          </div>
+        )}
+        {/* 点击放大 Lightbox */}
+        {zoom && (
+          <div
+            className="lightbox-mask"
+            onPointerDown={(e) => {
+              if (e.target === e.currentTarget) setZoom(null)
+            }}
+          >
+            <div className="lightbox-bar" onPointerDown={(e) => e.stopPropagation()}>
+              <span className="lightbox-label">{zoom.label}</span>
+              <span className="lightbox-hint">
+                {zoom.w}×{zoom.h}px · 滚轮区域可拖动滚动 · ESC 关闭
+              </span>
+              <div className="lightbox-actions">
+                <button className={`btn btn-sm ${zoomMode === 'fit' ? 'btn-primary' : ''}`} onClick={() => setZoomMode('fit')}>
+                  适应屏幕
+                </button>
+                <button className={`btn btn-sm ${zoomMode === 1 ? 'btn-primary' : ''}`} onClick={() => setZoomMode(1)}>
+                  原始尺寸
+                </button>
+                <button className={`btn btn-sm ${zoomMode === 1.5 ? 'btn-primary' : ''}`} onClick={() => setZoomMode(1.5)}>
+                  150%
+                </button>
+                <button className="btn btn-sm" onClick={() => setZoom(null)}>
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="lightbox-scroll">
+              <div className="bf-frame" style={{ width: zoom.w * zoomScale, height: zoom.h * zoomScale }}>
+                <div
+                  style={{ width: zoom.w, height: zoom.h, transform: `scale(${zoomScale})`, transformOrigin: 'top left' }}
+                  dangerouslySetInnerHTML={{ __html: zoom.html }}
+                />
+              </div>
             </div>
           </div>
         )}

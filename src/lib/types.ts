@@ -44,6 +44,8 @@ export interface CopyBundle {
   pillars: { tag: string; title: string; desc: string }[]
   /** 金句 2 条（社媒引用卡） */
   quotes: { text: string; source: string }[]
+  /** 品牌数据钩子 3 条（value=数字+单位，label≤8字），用于页面装饰带 */
+  dataPoints: { value: string; label: string }[]
   /** 上市排期节目/书目 4 条 */
   programs: { no: string; title: string; subtitle: string; date: string }[]
   /** 行动号召 */

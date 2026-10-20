@@ -844,6 +844,67 @@ body::after {
   to { opacity: 1; transform: none; }
 }
 
+/* ── 点击放大 Lightbox ─────────────────────────────── */
+.stage-body:not(.editing) .bf-page,
+.stage-body:not(.editing) .bf-poster,
+.stage-body:not(.editing) .bf-sq,
+.stage-body:not(.editing) .bf-vt,
+.stage-body:not(.editing) .bf-bn,
+.stage-body:not(.editing) .bf-sheet {
+  cursor: zoom-in;
+}
+.lightbox-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(6, 5, 3, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+}
+.lightbox-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.lightbox-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+}
+.lightbox-hint {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+  flex: 1;
+}
+.lightbox-actions {
+  display: flex;
+  gap: 8px;
+}
+.lightbox-scroll {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  padding: 32px;
+}
+.lightbox-scroll .bf-frame {
+  margin: auto;
+}
+.lightbox-scroll .bf-page,
+.lightbox-scroll .bf-poster,
+.lightbox-scroll .bf-sq,
+.lightbox-scroll .bf-vt,
+.lightbox-scroll .bf-bn,
+.lightbox-scroll .bf-sheet {
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+  cursor: default;
+}
+
 /* ── 模型设置弹窗 ─────────────────────────────── */
 .modal-mask {
   position: fixed;
