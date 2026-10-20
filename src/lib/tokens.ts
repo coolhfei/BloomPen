@@ -1,10 +1,25 @@
 import type { BrandSystem } from './types'
+import { fontMenu } from './types'
+
+/** 把任意字重吸附到该字体真实支持的字重上（防 faux bold 笔画糊团） */
+export function snapWeight(w: number, available: readonly number[]): number {
+  return available.reduce((best, cur) => (Math.abs(cur - w) < Math.abs(best - w) ? cur : best), available[0])
+}
 
 /**
  * brand.json → CSS 变量。
  * 所有物料模板只消费 CSS 变量，因此"改一处 token，全局重渲染"是工程必然。
+ * 字重层级三档（强/主/柔）+ 结构标签字重（正文字体）：
+ *   strong 给封面/海报大名等最大标题；main 给板块标题；soft 给宣言/引文；
+ *   label 给页头/元信息（用正文字体，制造字体层级对比）。
  */
 export function brandToVars(brand: BrandSystem): Record<string, string> {
+  const menu = fontMenu(brand.fonts.display)
+  const weights = menu?.weights ?? [400, 500, 700, 900]
+  const main = snapWeight(brand.fonts.displayWeight, weights)
+  const strong = weights[weights.length - 1]
+  const soft = snapWeight(Math.min(main, 500), weights)
+
   return {
     '--brand-primary': brand.colors.primary,
     '--brand-secondary': brand.colors.secondary,
@@ -14,7 +29,10 @@ export function brandToVars(brand: BrandSystem): Record<string, string> {
     '--brand-muted': brand.colors.muted,
     '--font-display': `"${brand.fonts.display}", "Noto Serif SC", serif`,
     '--font-body': `"${brand.fonts.body}", "Noto Sans SC", sans-serif`,
-    '--font-display-weight': String(brand.fonts.displayWeight),
+    '--font-display-weight': String(main),
+    '--font-display-weight-strong': String(strong),
+    '--font-display-weight-soft': String(soft),
+    '--font-label-weight': '600',
   }
 }
 

@@ -85,10 +85,56 @@ export interface AgentEvent {
 
 /** 品牌字体菜单：LLM 只能从中选择，保证字体已预加载且渲染稳定 */
 export const FONT_MENU = [
-  { id: 'Noto Serif SC', label: '思源宋体', feel: '人文衬线，庄重而有书卷气' },
-  { id: 'ZCOOL XiaoWei', label: '站酷小薇', feel: '纤细优雅，文艺轻盈' },
-  { id: 'Noto Sans SC', label: '思源黑体', feel: '现代无衬线，干净利落' },
-  { id: 'ZCOOL QingKe HuangYou', label: '站酷庆科黄油', feel: '厚重圆润，年轻有冲击力' },
-  { id: 'Ma Shan Zheng', label: '马善政楷书', feel: '手写楷书法度，东方气韵' },
-  { id: 'Long Cang', label: '龙藏体', feel: '随性手写，自由不羁' },
+  {
+    id: 'Noto Serif SC',
+    label: '思源宋体',
+    feel: '人文衬线，庄重而有书卷气',
+    weights: [300, 400, 500, 600, 700, 900],
+    scenes: '人文、纸感、茶饮、文化、生活方式',
+    note: '',
+  },
+  {
+    id: 'Noto Sans SC',
+    label: '思源黑体',
+    feel: '现代无衬线，干净利落',
+    weights: [300, 400, 500, 600, 700, 900],
+    scenes: '科技、效率、工具、电商、医疗、政务',
+    note: '可读性最高，远看可辨，默认安全选择',
+  },
+  {
+    id: 'ZCOOL XiaoWei',
+    label: '站酷小薇',
+    feel: '纤细优雅，文艺轻盈',
+    weights: [400],
+    scenes: '优雅文艺、女性向、轻奢',
+    note: '仅 400 一个字重，禁止假加粗',
+  },
+  {
+    id: 'ZCOOL QingKe HuangYou',
+    label: '站酷庆科黄油',
+    feel: '厚重圆润，年轻有冲击力',
+    weights: [400],
+    scenes: '仅限年轻食品、娱乐、潮玩、节庆促销类轻松场景',
+    note: '仅 400 一个字重，笔画密，小字号难辨，标题慎用',
+  },
+  {
+    id: 'Ma Shan Zheng',
+    label: '马善政楷书',
+    feel: '手写楷书法度，东方气韵',
+    weights: [400],
+    scenes: '东方传统、手作、书法气质',
+    note: '仅 400 一个字重，手写体，正文勿用',
+  },
+  {
+    id: 'Long Cang',
+    label: '龙藏体',
+    feel: '随性手写，自由不羁',
+    weights: [400],
+    scenes: '随性生活、手账、轻松随笔',
+    note: '仅 400 一个字重，手写体，小字号难辨',
+  },
 ] as const
+
+export function fontMenu(id: string) {
+  return FONT_MENU.find((f) => f.id === id)
+}

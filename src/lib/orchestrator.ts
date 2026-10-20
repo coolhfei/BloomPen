@@ -15,7 +15,9 @@ import {
   DATAPOINTS_PROMPT,
   PATCH_SYSTEM_PROMPT,
 } from './prompts'
+import { snapWeight } from './tokens'
 import type { AppSettings } from './providers/types'
+import { fontMenu } from './types'
 import type { AgentEvent, AgentId, BrandPatch, BrandSystem, CopyBundle, GenResult } from './types'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -149,6 +151,9 @@ function validateBrand(b: BrandSystem): void {
     if (!hex.test(v)) throw new Error(`colors.${k} 不是合法色值: ${v}`)
   }
   if (typeof b.fonts.displayWeight === 'string') b.fonts.displayWeight = Number(b.fonts.displayWeight) || 700
+  // 吸附到字体真实支持的字重，防 faux bold（单字重字体只能 400）
+  const menu = fontMenu(b.fonts.display)
+  if (menu) b.fonts.displayWeight = snapWeight(b.fonts.displayWeight, menu.weights)
 }
 
 function validateCopy(c: CopyBundle): void {

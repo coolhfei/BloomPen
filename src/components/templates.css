@@ -50,9 +50,10 @@
   letter-spacing: 0.1em;
 }
 .bf-page-title {
-  font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
-  font-size: 20px;
+  font-family: var(--font-body, sans-serif);
+  font-weight: var(--font-label-weight, 600);
+  font-size: 19px;
+  letter-spacing: 0.06em;
   flex: 1;
 }
 .bf-page-foot {
@@ -140,7 +141,7 @@
 }
 .bf-cover-name {
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
   font-size: 108px;
   line-height: 1.04;
   letter-spacing: 0.06em;
@@ -149,7 +150,7 @@
 .bf-cover-slogan {
   margin-top: 14px;
   font-family: var(--font-display, serif);
-  font-weight: 500;
+  font-weight: var(--font-display-weight-soft, 500);
   font-size: 26px;
   letter-spacing: 0.22em;
   color: var(--brand-primary);
@@ -220,7 +221,7 @@
 }
 .bf-manifesto-text {
   font-family: var(--font-display, serif);
-  font-weight: 500;
+  font-weight: var(--font-display-weight-soft, 500);
   font-size: 26px;
   line-height: 1.7;
   letter-spacing: 0.04em;
@@ -385,7 +386,7 @@
 }
 .bf-quote-strip p {
   font-family: var(--font-display, serif);
-  font-weight: 500;
+  font-weight: var(--font-display-weight-soft, 500);
   font-size: 19px;
   line-height: 1.8;
   letter-spacing: 0.04em;
@@ -430,7 +431,7 @@
 .bf-back-headline {
   margin-top: 40px;
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
   font-size: 46px;
   line-height: 1.4;
   letter-spacing: 0.06em;
@@ -528,7 +529,7 @@
 }
 .bf-poster-name {
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
   font-size: 92px;
   letter-spacing: 0.08em;
   line-height: 1.05;
@@ -536,7 +537,7 @@
 .bf-poster-slogan {
   margin-top: 16px;
   font-family: var(--font-display, serif);
-  font-weight: 500;
+  font-weight: var(--font-display-weight-soft, 500);
   font-size: 30px;
   letter-spacing: 0.24em;
 }
@@ -625,7 +626,7 @@
   display: flex;
   align-items: center;
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
   font-size: 66px;
   line-height: 1.65;
   letter-spacing: 0.04em;
@@ -706,7 +707,7 @@
 }
 .bf-program-card-title {
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
   font-size: 84px;
   letter-spacing: 0.05em;
   line-height: 1.2;

@@ -1,7 +1,9 @@
 import { FONT_MENU, type BrandPatch, type BrandSystem, type CopyBundle } from './types'
 import { hexToHsl, hslToHex } from './tokens'
 
-const fontMenuText = FONT_MENU.map((f) => `- "${f.id}"（${f.label}：${f.feel}）`).join('\n')
+const fontMenuText = FONT_MENU.map(
+  (f) => `- "${f.id}"（${f.label}：${f.feel}；支持字重 ${f.weights.join('/')}；适用：${f.scenes}${f.note ? `；注意：${f.note}` : ''}）`
+).join('\n')
 
 export const BRAND_SYSTEM_PROMPT = `你是一家顶级品牌咨询公司的品牌视觉系统 Agent。用户给你一段品牌简报，你需要产出一套完整的结构化品牌视觉系统，供下游版式、海报、社媒 Agent 共同遵循。你的产出要有明确的设计立场，而不是安全的中庸方案。
 
@@ -33,8 +35,13 @@ export const BRAND_SYSTEM_PROMPT = `你是一家顶级品牌咨询公司的品�
 ${fontMenuText}
 
 字体搭配要求：
-- display 与 body 必须形成对比：衬线↔无衬线，或厚重展示体↔细正文；禁止两者选同一字体
-- 科技/效率类品牌避免全衬线组合；人文/纸感类品牌避免全黑体组合
+- **可读性是第一铁律**：display 字体用于品牌大名与海报大标题，必须远看可辨、笔画不散；
+  科技/效率/工具/电商/医疗类品牌 display 优先 "Noto Sans SC"；人文/文化/茶饮/生活方式类优先 "Noto Serif SC"
+- 手写体（Ma Shan Zheng / Long Cang）与重笔画体（ZCOOL QingKe HuangYou）笔画密、小字号难辨：
+  仅当品牌调性明确匹配其场景时才可选作 display，且**永远不得选作 body**
+- display 与 body 必须形成对比：衬线↔无衬线；禁止两者选同一字体
+- **displayWeight 必须落在所选字体的支持字重列表里**（菜单已标明）；
+  单字重字体（仅 400）displayWeight 只能填 400——系统对不支持的字重会强制吸附，乱填会导致成品与设计意图不符
 
 配色要求：
 - 六个颜色必须整体协调，符合品牌气质
