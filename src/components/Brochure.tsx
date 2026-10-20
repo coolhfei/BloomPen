@@ -71,6 +71,12 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
               </li>
             ))}
           </ul>
+          {copy.quotes[1] && (
+            <div className="bf-intro-bottom">
+              <p>「{copy.quotes[1].text}」</p>
+              <cite>—— {copy.quotes[1].source}</cite>
+            </div>
+          )}
         </div>
         <footer className="bf-page-foot">
           <span>{brand.brandNameEn}</span>

@@ -203,15 +203,21 @@
 }
 .bf-manifesto {
   list-style: none;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  gap: 0;
 }
 .bf-manifesto li {
   display: flex;
   gap: 22px;
   align-items: baseline;
+  padding: 20px 0;
+  border-left: 3px solid var(--brand-accent);
+  padding-left: 20px;
+  margin-left: 4px;
+}
+.bf-manifesto li + li {
+  border-top: 1px solid color-mix(in srgb, var(--brand-muted) 22%, transparent);
 }
 .bf-manifesto-idx {
   font-family: 'IBM Plex Mono', monospace;
@@ -225,9 +231,32 @@
   font-size: 26px;
   line-height: 1.7;
   letter-spacing: 0.04em;
-  border-bottom: 1px solid color-mix(in srgb, var(--brand-secondary) 40%, transparent);
-  padding-bottom: 16px;
   flex: 1;
+}
+/* 底部引文锚点：填满下半页 */
+.bf-intro-bottom {
+  margin-top: auto;
+  padding: 30px 36px;
+  background: color-mix(in srgb, var(--brand-secondary) 10%, transparent);
+  border-left: 4px solid var(--brand-secondary);
+  border-radius: 2px;
+}
+.bf-intro-bottom p {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight-soft, 500);
+  font-size: 21px;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--brand-ink) 82%, var(--brand-muted));
+}
+.bf-intro-bottom cite {
+  display: block;
+  margin-top: 10px;
+  font-style: normal;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.14em;
+  color: var(--brand-muted);
 }
 
 /* 数据钩子装饰带（P2） */
