@@ -1,6 +1,7 @@
 import { chatJSON, chatText } from './providers/llm'
 import { generateHero } from './providers/image'
 import { parseJSONLoose } from './json'
+import { checkCopy, sanitizeCopy } from './copyqc'
 import {
   applyPatch,
   BRIEF_OPTIMIZER_PROMPT,
@@ -59,8 +60,33 @@ export async function runPipeline(brief: string, emit: Emit, settings: AppSettin
   emit({ agent: 'copy', type: 'log', message: '按品牌语气撰写中英文文案…' })
   emit({ agent: 'visual', type: 'log', message: settings.image.kind === 'none' ? '生图已关闭 · 使用程序化视觉' : '构造主视觉提示词…' })
 
-  const copyPromise = chatJSON<CopyBundle>(llm, COPY_PROMPT, buildCopyUserPrompt(brief, brand), 0.9).then(async (copy) => {
-    validateCopy(copy)
+  const copyPromise = chatJSON<CopyBundle>(llm, COPY_PROMPT, buildCopyUserPrompt(brief, brand), 0.9).then(async (rawCopy) => {
+    validateCopy(rawCopy)
+    let copy = sanitizeCopy(rawCopy)
+
+    // ── 文案质检：命中硬违规则带违例清单重写一次（公共质检层，场景无关）──
+    const violations = checkCopy(copy)
+    if (violations.length > 0) {
+      emit({ agent: 'copy', type: 'log', message: `质检命中 ${violations.length} 处，自动重写…` })
+      try {
+        const retry = await chatJSON<CopyBundle>(
+          llm,
+          COPY_PROMPT,
+          buildCopyUserPrompt(brief, brand) +
+            `\n\n上次产出的违例清单（本次必须全部规避）：\n${violations.map((v) => `- ${v.field}：${v.issue}`).join('\n')}`,
+          0.7
+        )
+        validateCopy(retry)
+        const retryClean = sanitizeCopy(retry)
+        // 重写后违规数不增才采用（防越改越差）
+        if (checkCopy(retryClean).length <= violations.length) copy = retryClean
+      } catch {
+        emit({ agent: 'copy', type: 'log', message: '重写失败，沿用清洗后版本' })
+      }
+    } else {
+      emit({ agent: 'copy', type: 'log', message: '文案质检通过' })
+    }
+
     // 数据钩子兜底：主调用漏字段时补一次轻量调用（保证内页数据带不空缺）
     if (!copy.dataPoints?.length) {
       try {

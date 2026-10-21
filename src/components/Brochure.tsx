@@ -1,4 +1,5 @@
 import type { BrandSystem, CopyBundle } from '../lib/types'
+import { textTier } from '../lib/textfit'
 import { ContourField, LogoMark, MotifDecor } from './BrandMark'
 
 interface Props {
@@ -34,7 +35,7 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
         </div>
 
         <div className="bf-cover-bottom">
-          <h1 className="bf-cover-name">{brand.brandName}</h1>
+          <h1 className={`bf-cover-name ${textTier(brand.brandName + brand.brandNameEn, 10, 16)}`}>{brand.brandName}</h1>
           <p className="bf-cover-slogan">{brand.slogan.zh}</p>
           <p className="bf-cover-slogan-en">{brand.slogan.en}</p>
         </div>

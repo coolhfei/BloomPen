@@ -1,4 +1,6 @@
 import type { BrandSystem, CopyBundle } from '../lib/types'
+import { stripCardLabel, stripHashtags } from '../lib/copyqc'
+import { textTier } from '../lib/textfit'
 import { ContourField, LogoMark, MotifDecor } from './BrandMark'
 
 interface Props {
@@ -7,17 +9,12 @@ interface Props {
   heroUrl: string | null
 }
 
-/** 清洗：模型把载体标注写进标题时剥掉前缀（如"方图引用卡｜xxx""方图引用卡：xxx"） */
-const stripCardLabel = (t: string) =>
-  t.replace(/^[^｜|：:]{0,12}(方图|竖图|横图|引用卡|节目卡|海报卡|卡片|Banner|banner)[｜|：:]\s*/, '').trim()
-/** 清洗：卡片正文不含 #话题标签（发布侧用，不上卡） */
-const stripHashtags = (t: string) => t.replace(/#[^#\s　]+/g, '').replace(/\s{2,}/g, ' ').trim()
-
 /** 方图 · 卖点卡 1080×1080（社媒第一图：讲清产品帮我干什么） */
 export function QuoteCard({ brand, copy }: Props) {
   const raw = copy.socialCaptions[0] ?? { title: brand.slogan.zh, body: '' }
   const title = stripCardLabel(raw.title)
   const body = stripHashtags(raw.body)
+  const tier = textTier(title, 8, 14)
   return (
     <div className="bf-sq bf-quote-card" data-export={`${brand.brandName}-社媒方图-1080x1080.png`}>
       <header className="bf-quote-card-top">
@@ -26,7 +23,7 @@ export function QuoteCard({ brand, copy }: Props) {
       </header>
       <div className="bf-quote-card-main">
         <span className="bf-quote-card-kicker">{brand.category}</span>
-        <p className="bf-quote-card-text">{title}</p>
+        <p className={`bf-quote-card-text ${tier}`}>{title}</p>
         {body && <p className="bf-quote-card-sub">{body}</p>}
         {copy.dataPoints?.length > 0 && (
           <div className="bf-quote-card-stats">
@@ -66,7 +63,7 @@ export function ProgramCard({ brand, copy, heroUrl }: Props) {
         <span className="bf-program-card-no">{pillar.tag}</span>
       </div>
       <div className="bf-program-card-body">
-        <h3 className="bf-program-card-title">{pillar.title}</h3>
+        <h3 className={`bf-program-card-title ${textTier(pillar.title, 6, 10)}`}>{pillar.title}</h3>
         <p className="bf-program-card-sub">{pillar.desc}</p>
         <div className="bf-program-card-meta">
           <LogoMark size={30} brand={brand} />
@@ -93,7 +90,7 @@ export function BannerCard({ brand, copy }: Props) {
       <div className="bf-banner-body">
         <div className="bf-banner-left">
           <LogoMark size={88} brand={brand} />
-          <h3 className="bf-banner-name">{brand.brandName}</h3>
+          <h3 className={`bf-banner-name ${textTier(brand.brandName + brand.brandNameEn, 8, 14)}`}>{brand.brandName}</h3>
           <p className="bf-banner-slogan">{brand.slogan.zh}</p>
         </div>
 

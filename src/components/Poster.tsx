@@ -1,4 +1,5 @@
 import type { BrandSystem, CopyBundle } from '../lib/types'
+import { textTier } from '../lib/textfit'
 import { ContourField, LogoMark, MotifDecor } from './BrandMark'
 
 interface Props {
@@ -27,7 +28,7 @@ export function Poster({ brand, copy, heroUrl }: Props) {
         </div>
       </header>
       <div className="bf-poster-main">
-        <h1 className="bf-poster-name">{brand.brandName}</h1>
+        <h1 className={`bf-poster-name ${textTier(brand.brandName + brand.brandNameEn, 10, 16)}`}>{brand.brandName}</h1>
         <p className="bf-poster-slogan">{brand.slogan.zh}</p>
         <div className="bf-poster-wave">
           <MotifDecor width={300} height={22} color={brand.colors.accent} brand={brand} />

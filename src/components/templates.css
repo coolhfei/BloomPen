@@ -71,6 +71,18 @@
   padding-top: 12px;
 }
 
+/* ── 文字长度自适应分档（长文案自动缩字号，任何场景不破版）── */
+.bf-cover-name.t-m { font-size: 88px; }
+.bf-cover-name.t-l { font-size: 68px; }
+.bf-poster-name.t-m { font-size: 76px; }
+.bf-poster-name.t-l { font-size: 60px; }
+.bf-quote-card-text.t-m { font-size: 60px; }
+.bf-quote-card-text.t-l { font-size: 46px; }
+.bf-program-card-title.t-m { font-size: 68px; }
+.bf-program-card-title.t-l { font-size: 54px; }
+.bf-banner-name.t-m { font-size: 88px; }
+.bf-banner-name.t-l { font-size: 68px; }
+
 /* ── P1 封面 ─────────────────────────────── */
 .bf-cover {
   display: flex;
