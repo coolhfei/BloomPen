@@ -21,16 +21,26 @@ export function QuoteCard({ brand, copy }: Props) {
   return (
     <div className="bf-sq bf-quote-card" data-export={`${brand.brandName}-社媒方图-1080x1080.png`}>
       <header className="bf-quote-card-top">
-        <LogoMark size={46} brand={brand} />
+        <LogoMark size={60} brand={brand} />
         <span className="bf-en">@{brand.brandNameEn.toLowerCase().replace(/\s+/g, '')}</span>
       </header>
       <div className="bf-quote-card-main">
         <span className="bf-quote-card-kicker">{brand.category}</span>
         <p className="bf-quote-card-text">{title}</p>
         {body && <p className="bf-quote-card-sub">{body}</p>}
+        {copy.dataPoints?.length > 0 && (
+          <div className="bf-quote-card-stats">
+            {copy.dataPoints.map((d, i) => (
+              <span key={i}>
+                <b>{d.value}</b>
+                <i>{d.label}</i>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       <div className="bf-quote-card-wave">
-        <MotifDecor width={280} height={20} color={brand.colors.accent} brand={brand} />
+        <MotifDecor width={420} height={28} color={brand.colors.accent} brand={brand} />
       </div>
       <footer className="bf-quote-card-foot">
         <cite>{brand.brandName}</cite>

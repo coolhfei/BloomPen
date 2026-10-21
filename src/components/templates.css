@@ -644,10 +644,10 @@
 .bf-quote-card-top {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 26px;
 }
 .bf-quote-card-top .bf-en {
-  font-size: 22px;
+  font-size: 26px;
   color: var(--brand-muted);
 }
 .bf-quote-card-main {
@@ -655,24 +655,23 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 26px;
+  gap: 40px;
 }
 .bf-quote-card-kicker {
   align-self: flex-start;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 20px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--brand-accent);
-  border: 1.5px solid color-mix(in srgb, var(--brand-accent) 55%, transparent);
-  padding: 8px 18px;
+  font-size: 24px;
+  letter-spacing: 0.16em;
+  color: var(--brand-paper);
+  background: var(--brand-accent);
+  padding: 12px 26px;
   border-radius: 999px;
 }
 .bf-quote-card-text {
   font-family: var(--font-display, serif);
   font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
-  font-size: 54px;
-  line-height: 1.42;
+  font-size: 72px;
+  line-height: 1.35;
   letter-spacing: 0.02em;
   color: var(--brand-primary);
   display: -webkit-box;
@@ -682,10 +681,43 @@
 }
 .bf-quote-card-sub {
   font-family: var(--font-body, sans-serif);
-  font-size: 27px;
-  line-height: 1.85;
+  font-size: 32px;
+  line-height: 1.9;
   color: color-mix(in srgb, var(--brand-ink) 72%, var(--brand-muted));
-  max-width: 840px;
+  max-width: 900px;
+}
+.bf-quote-card-stats {
+  display: flex;
+  gap: 0;
+  margin-top: 8px;
+  border-top: 2px solid color-mix(in srgb, var(--brand-primary) 80%, transparent);
+  padding-top: 34px;
+}
+.bf-quote-card-stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.bf-quote-card-stats span + span {
+  border-left: 1px solid color-mix(in srgb, var(--brand-muted) 35%, transparent);
+  padding-left: 40px;
+  margin-left: 40px;
+}
+.bf-quote-card-stats b {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 700);
+  font-size: 46px;
+  line-height: 1;
+  color: var(--brand-primary);
+  font-style: normal;
+}
+.bf-quote-card-stats i {
+  font-style: normal;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  color: var(--brand-muted);
 }
 .bf-quote-card-foot {
   display: flex;
@@ -696,12 +728,12 @@
 }
 .bf-quote-card-foot cite {
   font-style: normal;
-  font-size: 26px;
+  font-size: 30px;
   color: var(--brand-muted);
   letter-spacing: 0.1em;
 }
 .bf-quote-card-tag {
-  font-size: 26px;
+  font-size: 30px;
   color: var(--brand-accent);
   letter-spacing: 0.08em;
 }
