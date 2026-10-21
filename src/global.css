@@ -1082,6 +1082,24 @@ select.set-input {
   accent-color: var(--amber);
   margin-top: 2px;
 }
+.set-test-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 30px;
+}
+.set-inline-msg {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green-led);
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+}
+.set-inline-msg.err {
+  color: var(--vermillion);
+}
 .set-recs {
   display: flex;
   flex-direction: column;

@@ -20,7 +20,8 @@ const IMAGE_KINDS: { id: ImageKind; label: string }[] = [
 
 export function SettingsModal({ initial, onSave, onClose }: Props) {
   const [draft, setDraft] = useState<AppSettings>(structuredClone(initial))
-  const [msg, setMsg] = useState<{ text: string; err?: boolean } | null>(null)
+  const [llmMsg, setLlmMsg] = useState<{ text: string; err?: boolean } | null>(null)
+  const [imgMsg, setImgMsg] = useState<{ text: string; err?: boolean } | null>(null)
   const [testing, setTesting] = useState<'llm' | 'image' | null>(null)
 
   const setLlm = (patch: Partial<AppSettings['llm']>) => setDraft((d) => ({ ...d, llm: { ...d.llm, ...patch } }))
@@ -28,12 +29,15 @@ export function SettingsModal({ initial, onSave, onClose }: Props) {
 
   const doTest = async (which: 'llm' | 'image') => {
     setTesting(which)
-    setMsg(null)
+    if (which === 'llm') setLlmMsg(null)
+    else setImgMsg(null)
     try {
       const result = which === 'llm' ? await testLlm(draft.llm) : await testImage(draft.image)
-      setMsg({ text: `✓ 连接成功：${result}` })
+      if (which === 'llm') setLlmMsg({ text: `✓ ${result}` })
+      else setImgMsg({ text: `✓ ${result}` })
     } catch (e) {
-      setMsg({ text: `✕ ${(e as Error).message}`, err: true })
+      if (which === 'llm') setLlmMsg({ text: `✕ ${(e as Error).message}`, err: true })
+      else setImgMsg({ text: `✕ ${(e as Error).message}`, err: true })
     } finally {
       setTesting(null)
     }
@@ -99,9 +103,12 @@ export function SettingsModal({ initial, onSave, onClose }: Props) {
                 </button>
               ))}
             </div>
-            <button className="btn btn-sm" onClick={() => doTest('llm')} disabled={testing !== null}>
-              {testing === 'llm' ? '测试中…' : '测试连接'}
-            </button>
+            <div className="set-test-row">
+              <button className="btn btn-sm" onClick={() => doTest('llm')} disabled={testing !== null}>
+                {testing === 'llm' ? '测试中…' : '测试连接'}
+              </button>
+              {llmMsg && <span className={`set-inline-msg ${llmMsg.err ? 'err' : ''}`}>{llmMsg.text}</span>}
+            </div>
           </section>
 
           <section className="set-sec">
@@ -168,12 +175,14 @@ export function SettingsModal({ initial, onSave, onClose }: Props) {
                 </div>
               ))}
             </div>
-            <button className="btn btn-sm" onClick={() => doTest('image')} disabled={testing !== null}>
-              {testing === 'image' ? '测试中…' : '测试连接'}
-            </button>
+            <div className="set-test-row">
+              <button className="btn btn-sm" onClick={() => doTest('image')} disabled={testing !== null}>
+                {testing === 'image' ? '测试中…' : '测试连接'}
+              </button>
+              {imgMsg && <span className={`set-inline-msg ${imgMsg.err ? 'err' : ''}`}>{imgMsg.text}</span>}
+            </div>
           </section>
 
-          {msg && <div className={`set-msg ${msg.err ? 'err' : ''}`}>{msg.text}</div>}
         </div>
 
         <footer className="modal-foot">
