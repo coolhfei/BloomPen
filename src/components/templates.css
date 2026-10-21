@@ -789,7 +789,7 @@
   color: var(--brand-accent);
 }
 
-/* 横图 Banner 1920×1080 */
+/* 横图 Banner 1920×1080 —— 品牌横幅三段式 */
 .bf-bn {
   width: 1920px;
   height: 1080px;
@@ -801,9 +801,8 @@
   color: var(--brand-paper);
   font-family: var(--font-body, sans-serif);
   display: flex;
-  align-items: center;
-  gap: 80px;
-  padding: 0 110px;
+  flex-direction: column;
+  padding: 72px 100px;
   flex: none;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
 }
@@ -811,76 +810,129 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(90% 120% at 85% 20%, color-mix(in srgb, var(--brand-secondary) 45%, transparent) 0%, transparent 55%);
+  background: radial-gradient(80% 110% at 12% 100%, color-mix(in srgb, var(--brand-ink) 35%, transparent) 0%, transparent 55%),
+    radial-gradient(70% 90% at 92% 0%, color-mix(in srgb, var(--brand-secondary) 38%, transparent) 0%, transparent 60%);
 }
-.bf-banner-left,
-.bf-banner-mid,
-.bf-banner-right {
+.bf-banner-texture {
+  position: absolute;
+  right: 60px;
+  bottom: 40px;
+  opacity: 0.5;
+  z-index: 0;
+}
+.bf-banner-topline {
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-paper) 25%, transparent);
+  padding-bottom: 26px;
 }
-.bf-banner-left {
+.bf-banner-topline .bf-en {
+  font-size: 26px;
+  color: var(--brand-paper);
+}
+.bf-banner-topline-cat {
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--brand-paper) 62%, transparent);
+}
+.bf-banner-body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 34px;
+  gap: 90px;
+  min-height: 0;
+}
+.bf-banner-left {
   flex: none;
+  width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 .bf-banner-name {
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
-  font-size: 76px;
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
+  font-size: 108px;
   letter-spacing: 0.06em;
-  line-height: 1.15;
-}
-.bf-banner-name .bf-en {
-  display: block;
-  font-size: 22px;
-  opacity: 0.72;
-  margin-top: 10px;
+  line-height: 1.08;
 }
 .bf-banner-slogan {
-  margin-top: 18px;
-  font-size: 30px;
-  letter-spacing: 0.2em;
+  font-size: 34px;
+  letter-spacing: 0.18em;
   color: var(--brand-accent);
   font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight-soft, 500);
 }
 .bf-banner-mid {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  align-items: center;
+  gap: 34px;
+  min-width: 0;
 }
-.bf-banner-tags {
+.bf-banner-pillar {
   display: flex;
-  gap: 24px;
+  align-items: baseline;
+  gap: 22px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--brand-paper) 30%, transparent);
+  padding-bottom: 26px;
 }
-.bf-banner-tag {
-  font-size: 27px;
-  letter-spacing: 0.08em;
-  border: 2px solid color-mix(in srgb, var(--brand-paper) 45%, transparent);
-  padding: 14px 30px;
-  border-radius: 999px;
+.bf-banner-pillar:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.bf-banner-pillar-tag {
+  flex: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  color: var(--brand-accent);
+}
+.bf-banner-pillar-text b {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 600);
+  font-size: 40px;
+  letter-spacing: 0.04em;
+  color: var(--brand-paper);
 }
 .bf-banner-right {
   flex: none;
-  text-align: right;
+  width: 420px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  max-width: 460px;
+  gap: 24px;
+  text-align: right;
+  align-items: flex-end;
 }
 .bf-banner-cta {
   font-family: var(--font-display, serif);
-  font-weight: var(--font-display-weight, 700);
-  font-size: 44px;
-  line-height: 1.5;
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
+  font-size: 52px;
+  line-height: 1.35;
   letter-spacing: 0.05em;
 }
 .bf-banner-date {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 24px;
-  letter-spacing: 0.12em;
-  color: color-mix(in srgb, var(--brand-paper) 75%, transparent);
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--brand-paper) 78%, transparent);
+}
+.bf-banner-baseline {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid color-mix(in srgb, var(--brand-paper) 25%, transparent);
+  padding-top: 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 20px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--brand-paper) 60%, transparent);
 }

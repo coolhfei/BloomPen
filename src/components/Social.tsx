@@ -7,9 +7,9 @@ interface Props {
   heroUrl: string | null
 }
 
-/** 清洗：模型把载体标注写进标题时剥掉前缀（如"方图引用卡｜xxx"） */
+/** 清洗：模型把载体标注写进标题时剥掉前缀（如"方图引用卡｜xxx""方图引用卡：xxx"） */
 const stripCardLabel = (t: string) =>
-  t.replace(/^[^｜|]*(方图|竖图|横图|引用卡|节目卡|海报卡|卡片|Banner|banner)[｜|]\s*/, '').trim()
+  t.replace(/^[^｜|：:]{0,12}(方图|竖图|横图|引用卡|节目卡|海报卡|卡片|Banner|banner)[｜|：:]\s*/, '').trim()
 /** 清洗：卡片正文不含 #话题标签（发布侧用，不上卡） */
 const stripHashtags = (t: string) => t.replace(/#[^#\s　]+/g, '').replace(/\s{2,}/g, ' ').trim()
 
@@ -68,33 +68,46 @@ export function ProgramCard({ brand, copy, heroUrl }: Props) {
   )
 }
 
-/** 横图 · Banner 1920×1080 */
+/** 横图 · Banner 1920×1080（品牌横幅：左品牌区 / 中板块列表 / 右行动区） */
 export function BannerCard({ brand, copy }: Props) {
   return (
     <div className="bf-bn bf-banner" data-export={`${brand.brandName}-社媒横图-1920x1080.png`}>
-      <div className="bf-banner-left">
-        <LogoMark size={52} brand={brand} />
-        <div>
-          <h3 className="bf-banner-name">
-            {brand.brandName} <span className="bf-en">{brand.brandNameEn}</span>
-          </h3>
+      <div className="bf-banner-texture">
+        <MotifDecor width={520} height={120} color={brand.colors.accent} brand={brand} />
+      </div>
+      <header className="bf-banner-topline">
+        <span className="bf-en">{brand.brandNameEn}</span>
+        <span className="bf-banner-topline-cat">{brand.category}</span>
+      </header>
+
+      <div className="bf-banner-body">
+        <div className="bf-banner-left">
+          <LogoMark size={88} brand={brand} />
+          <h3 className="bf-banner-name">{brand.brandName}</h3>
           <p className="bf-banner-slogan">{brand.slogan.zh}</p>
         </div>
-      </div>
-      <div className="bf-banner-mid">
-        <MotifDecor width={360} height={26} color={brand.colors.accent} brand={brand} />
-        <div className="bf-banner-tags">
+
+        <div className="bf-banner-mid">
           {copy.pillars.map((p, i) => (
-            <span className="bf-banner-tag" key={i}>
-              {p.tag} · {p.title}
-            </span>
+            <div className="bf-banner-pillar" key={i}>
+              <span className="bf-banner-pillar-tag">{p.tag}</span>
+              <div className="bf-banner-pillar-text">
+                <b>{p.title}</b>
+              </div>
+            </div>
           ))}
         </div>
+
+        <div className="bf-banner-right">
+          <span className="bf-banner-cta">{copy.cta.headline}</span>
+          <span className="bf-banner-date">{copy.cta.sub}</span>
+        </div>
       </div>
-      <div className="bf-banner-right">
-        <span className="bf-banner-cta">{copy.cta.headline}</span>
-        <span className="bf-banner-date">{copy.cta.sub}</span>
-      </div>
+
+      <footer className="bf-banner-baseline">
+        <span>{brand.slogan.en}</span>
+        <span className="bf-en">@{brand.brandNameEn.toLowerCase().replace(/\s+/g, '')}</span>
+      </footer>
     </div>
   )
 }
