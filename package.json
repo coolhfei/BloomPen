@@ -1,7 +1,7 @@
 {
   "name": "brandforge",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "一句话生成整套品牌视觉物料（宣传册/海报/社媒套图）。本地优先、模型自配、AGPL-3.0 开源客户端。",
   "license": "AGPL-3.0-only",
   "main": "electron/main.cjs",

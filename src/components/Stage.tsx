@@ -17,6 +17,8 @@ interface Props {
   onToggleEdit: () => void
   onEditSubmit: (instruction: string, selectedText: string) => Promise<void>
   editing: boolean
+  /** 首次打开尚无产物：舞台显示空状态而非示例物料 */
+  empty: boolean
 }
 
 /** 缩放展示框：内层保持真实导出尺寸，外层按舞台空间缩放 */
@@ -43,7 +45,7 @@ function ScaleFrame({
 const BROCHURE_W = 794 * 3 + 28 * 2 // 3+2 两行排布：一行 3 页
 const BROCHURE_H = 1123 * 2 + 28
 
-export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing }: Props) {
+export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty }: Props) {
   const { brand, copy, heroUrl } = result
   const bodyRef = useRef<HTMLDivElement>(null)
   const brochureRef = useRef<HTMLDivElement>(null)
@@ -220,13 +222,17 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
         ))}
         <div className="stage-actions">
           <span className="stage-hint">{editMode ? '拖拽框选物料区域 → 自然语言修改' : ''}</span>
-          <button className={`btn btn-sm ${editMode ? 'btn-danger' : ''}`} onClick={onToggleEdit}>
-            {editMode ? '✕ 退出框选' : '✂ 框选编辑'}
-          </button>
-          {exportLabel && (
-            <button className="btn btn-sm btn-primary" onClick={doExport}>
-              {exportLabel}
-            </button>
+          {!empty && (
+            <>
+              <button className={`btn btn-sm ${editMode ? 'btn-danger' : ''}`} onClick={onToggleEdit}>
+                {editMode ? '✕ 退出框选' : '✂ 框选编辑'}
+              </button>
+              {exportLabel && (
+                <button className="btn btn-sm btn-primary" onClick={doExport}>
+                  {exportLabel}
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -239,6 +245,17 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
       >
+        {empty ? (
+          <div className="stage-empty">
+            <div className="stage-empty-title">还没有物料</div>
+            <div className="stage-empty-steps">
+              <span>① 在上方输入品牌简报（点输入框可选示例）</span>
+              <span>② 点击「⚡ 生成物料包」</span>
+              <span>③ 品牌规范 / 宣传册 / 海报 / 社媒套图将出现在这里</span>
+            </div>
+          </div>
+        ) : (
+          <>
         {tab === 'brand' && (
           <ScaleFrame w={900} h={780} scale={sheetScale}>
             <BrandSheet brand={brand} copy={copy} />
@@ -284,6 +301,8 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
               <p className="bf-social-caption">{copy.socialCaptions[2]?.body ?? ''}</p>
             </div>
           </div>
+        )}
+          </>
         )}
 
         {/* 框选编辑 UI */}

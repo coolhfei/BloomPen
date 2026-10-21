@@ -14,8 +14,15 @@ asar: true
 
 win:
   target:
-    - nsis
-  artifactName: BrandForge-${version}-win-${arch}.${ext}
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+    - target: portable
+      arch:
+        - x64
+        - ia32
+  artifactName: BrandForge-${version}-win-${arch}-setup.${ext}
 
 nsis:
   oneClick: false

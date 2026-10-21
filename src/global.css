@@ -443,6 +443,32 @@ body::after {
   letter-spacing: 0.1em;
 }
 
+/* ── 空状态（首次打开）─────────────────────── */
+.stage-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  color: var(--text-faint);
+}
+.stage-empty-title {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+}
+.stage-empty-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+  text-align: center;
+}
+
 /* 物料缩放框 */
 .bf-strip {
   display: flex;

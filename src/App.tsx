@@ -19,7 +19,7 @@ interface Toast {
 }
 
 export default function App() {
-  const [brief, setBrief] = useState(DEMO_BRIEFS[0])
+  const [brief, setBrief] = useState('')
   const [showChips, setShowChips] = useState(false)
   const [phase, setPhase] = useState<Phase>('idle')
   const [result, setResult] = useState<GenResult>(DEMO_RESULT)
@@ -213,6 +213,7 @@ export default function App() {
         onToggleEdit={() => setEditMode((v) => !v)}
         onEditSubmit={onEditSubmit}
         editing={editing}
+        empty={phase === 'idle'}
       />
 
       {/* ── 右侧检视器 ── */}
