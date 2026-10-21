@@ -36,6 +36,90 @@ export async function optimizeBrief(raw: string, settings: AppSettings): Promise
   return text.replace(/^["「『]|["」』]$/g, '').trim()
 }
 
+// ── 可独立触发的生成单元（供整体管线与"局部重生成"共用）──────────
+
+/** 品牌系统 Agent：简报 → brand.json */
+export async function genBrand(brief: string, llm: AppSettings['llm'], emit: Emit): Promise<BrandSystem> {
+  emit({ agent: 'brand', type: 'status', status: 'running' })
+  emit({ agent: 'brand', type: 'log', message: '解析品牌简报…' })
+  const brand = await chatJSON<BrandSystem>(llm, BRAND_SYSTEM_PROMPT, buildBrandUserPrompt(brief), 0.85)
+  validateBrand(brand)
+  emit({ agent: 'brand', type: 'log', message: `锁定视觉系统 · 主色 ${brand.colors.primary} · ${brand.slogan.zh}` })
+  emit({ agent: 'brand', type: 'status', status: 'done' })
+  return brand
+}
+
+/** 文案 Agent：简报 + 品牌系统 → 文案包（含质检重写与数据钩子兜底） */
+export async function genCopy(brief: string, brand: BrandSystem, llm: AppSettings['llm'], emit: Emit): Promise<CopyBundle> {
+  emit({ agent: 'copy', type: 'status', status: 'running' })
+  emit({ agent: 'copy', type: 'log', message: '按品牌语气撰写中英文文案…' })
+  const rawCopy = await chatJSON<CopyBundle>(llm, COPY_PROMPT, buildCopyUserPrompt(brief, brand), 0.9)
+  validateCopy(rawCopy)
+  let copy = sanitizeCopy(rawCopy)
+
+  const violations = checkCopy(copy)
+  if (violations.length > 0) {
+    emit({ agent: 'copy', type: 'log', message: `质检命中 ${violations.length} 处，自动重写…` })
+    try {
+      const retry = await chatJSON<CopyBundle>(
+        llm,
+        COPY_PROMPT,
+        buildCopyUserPrompt(brief, brand) +
+          `\n\n上次产出的违例清单（本次必须全部规避）：\n${violations.map((v) => `- ${v.field}：${v.issue}`).join('\n')}`,
+        0.7
+      )
+      validateCopy(retry)
+      const retryClean = sanitizeCopy(retry)
+      if (checkCopy(retryClean).length <= violations.length) copy = retryClean
+    } catch {
+      emit({ agent: 'copy', type: 'log', message: '重写失败，沿用清洗后版本' })
+    }
+  } else {
+    emit({ agent: 'copy', type: 'log', message: '文案质检通过' })
+  }
+
+  if (!copy.dataPoints?.length) {
+    try {
+      emit({ agent: 'copy', type: 'log', message: '补全品牌数据钩子…' })
+      const dp = await chatJSON<{ dataPoints: { value: string; label: string }[] }>(
+        llm,
+        DATAPOINTS_PROMPT,
+        buildDataPointsUserPrompt(brand, copy),
+        0.5
+      )
+      copy.dataPoints = (dp.dataPoints ?? []).slice(0, 3)
+    } catch {
+      copy.dataPoints = []
+    }
+  }
+  emit({
+    agent: 'copy',
+    type: 'log',
+    message: `文案就绪 · ${copy.pillars.length} 大内容板块 · ${copy.programs.length} 档节目`,
+  })
+  emit({ agent: 'copy', type: 'status', status: 'done' })
+  return copy
+}
+
+/** 主视觉 Agent：品牌系统 → 英雄图（失败返回 null，程序化视觉兜底） */
+export async function genHero(image: AppSettings['image'], brand: BrandSystem, emit: Emit): Promise<string | null> {
+  emit({ agent: 'visual', type: 'status', status: 'running' })
+  emit({ agent: 'visual', type: 'log', message: image.kind === 'none' ? '生图已关闭 · 使用程序化视觉' : '构造主视觉提示词…' })
+  if (image.kind === 'none') {
+    emit({ agent: 'visual', type: 'status', status: 'done' })
+    return null
+  }
+  try {
+    const hero = await generateHero(image, brand.heroPrompt, (msg) => emit({ agent: 'visual', type: 'log', message: msg }))
+    emit({ agent: 'visual', type: 'log', message: '主视觉生成完成' })
+    emit({ agent: 'visual', type: 'status', status: 'done' })
+    return hero
+  } catch (e) {
+    emit({ agent: 'visual', type: 'error', message: `生图失败，使用程序化视觉兜底：${(e as Error).message}` })
+    return null
+  }
+}
+
 /**
  * 编排管线（模型无关）：
  *   brand ──┬─→ copy ──┬─→ layout
@@ -44,88 +128,14 @@ export async function optimizeBrief(raw: string, settings: AppSettings): Promise
  * layout 只依赖 copy（程序化渲染）；social 等 copy + visual。
  */
 export async function runPipeline(brief: string, emit: Emit, settings: AppSettings): Promise<GenResult> {
-  const llm = settings.llm
+  // ── 1. 品牌系统 ──
+  const brand = await genBrand(brief, settings.llm, emit)
 
-  // ── 1. 品牌系统 Agent ─────────────────────────────
-  emit({ agent: 'brand', type: 'status', status: 'running' })
-  emit({ agent: 'brand', type: 'log', message: '解析品牌简报…' })
-  const brand = await chatJSON<BrandSystem>(llm, BRAND_SYSTEM_PROMPT, buildBrandUserPrompt(brief), 0.85)
-  validateBrand(brand)
-  emit({ agent: 'brand', type: 'log', message: `锁定视觉系统 · 主色 ${brand.colors.primary} · ${brand.slogan.zh}` })
-  emit({ agent: 'brand', type: 'status', status: 'done' })
+  // ── 2. 文案 ∥ 主视觉 并行 ──
+  const copyPromise = genCopy(brief, brand, settings.llm, emit)
+  const visualPromise = genHero(settings.image, brand, emit)
 
-  // ── 2. 文案 Agent 与 主视觉 Agent 并行 ────────────
-  emit({ agent: 'copy', type: 'status', status: 'running' })
-  emit({ agent: 'visual', type: 'status', status: 'running' })
-  emit({ agent: 'copy', type: 'log', message: '按品牌语气撰写中英文文案…' })
-  emit({ agent: 'visual', type: 'log', message: settings.image.kind === 'none' ? '生图已关闭 · 使用程序化视觉' : '构造主视觉提示词…' })
-
-  const copyPromise = chatJSON<CopyBundle>(llm, COPY_PROMPT, buildCopyUserPrompt(brief, brand), 0.9).then(async (rawCopy) => {
-    validateCopy(rawCopy)
-    let copy = sanitizeCopy(rawCopy)
-
-    // ── 文案质检：命中硬违规则带违例清单重写一次（公共质检层，场景无关）──
-    const violations = checkCopy(copy)
-    if (violations.length > 0) {
-      emit({ agent: 'copy', type: 'log', message: `质检命中 ${violations.length} 处，自动重写…` })
-      try {
-        const retry = await chatJSON<CopyBundle>(
-          llm,
-          COPY_PROMPT,
-          buildCopyUserPrompt(brief, brand) +
-            `\n\n上次产出的违例清单（本次必须全部规避）：\n${violations.map((v) => `- ${v.field}：${v.issue}`).join('\n')}`,
-          0.7
-        )
-        validateCopy(retry)
-        const retryClean = sanitizeCopy(retry)
-        // 重写后违规数不增才采用（防越改越差）
-        if (checkCopy(retryClean).length <= violations.length) copy = retryClean
-      } catch {
-        emit({ agent: 'copy', type: 'log', message: '重写失败，沿用清洗后版本' })
-      }
-    } else {
-      emit({ agent: 'copy', type: 'log', message: '文案质检通过' })
-    }
-
-    // 数据钩子兜底：主调用漏字段时补一次轻量调用（保证内页数据带不空缺）
-    if (!copy.dataPoints?.length) {
-      try {
-        emit({ agent: 'copy', type: 'log', message: '补全品牌数据钩子…' })
-        const dp = await chatJSON<{ dataPoints: { value: string; label: string }[] }>(
-          llm,
-          DATAPOINTS_PROMPT,
-          buildDataPointsUserPrompt(brand, copy),
-          0.5
-        )
-        copy.dataPoints = (dp.dataPoints ?? []).slice(0, 3)
-      } catch {
-        copy.dataPoints = []
-      }
-    }
-    emit({
-      agent: 'copy',
-      type: 'log',
-      message: `文案就绪 · ${copy.pillars.length} 大内容板块 · ${copy.programs.length} 档节目`,
-    })
-    emit({ agent: 'copy', type: 'status', status: 'done' })
-    return copy
-  })
-
-  const visualPromise =
-    settings.image.kind === 'none'
-      ? Promise.resolve(null)
-      : generateHero(settings.image, brand.heroPrompt, (msg) => emit({ agent: 'visual', type: 'log', message: msg }))
-          .then((dataUrl) => {
-            emit({ agent: 'visual', type: 'log', message: '主视觉生成完成' })
-            emit({ agent: 'visual', type: 'status', status: 'done' })
-            return dataUrl
-          })
-          .catch((e) => {
-            emit({ agent: 'visual', type: 'error', message: `生图失败，使用程序化视觉兜底：${(e as Error).message}` })
-            return null
-          })
-
-  // ── 3. 版式 Agent（等文案）────────────────────────
+  // ── 3. 版式（等文案）──
   emit({ agent: 'layout', type: 'status', status: 'running' })
   emit({ agent: 'layout', type: 'log', message: '等待文案注入版式网格…' })
   const copy = await copyPromise
@@ -133,7 +143,7 @@ export async function runPipeline(brief: string, emit: Emit, settings: AppSettin
   emit({ agent: 'layout', type: 'log', message: '宣传册 5 页排版完成 · 封面 / 简介 / 内容矩阵 / 排期 / 封底' })
   emit({ agent: 'layout', type: 'status', status: 'done' })
 
-  // ── 4. 社媒 Agent（等文案 + 主视觉）───────────────
+  // ── 4. 社媒（等文案 + 主视觉）──
   emit({ agent: 'social', type: 'status', status: 'running' })
   emit({ agent: 'social', type: 'log', message: '等待主视觉合成…' })
   const hero = await visualPromise

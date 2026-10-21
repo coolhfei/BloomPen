@@ -24,7 +24,16 @@ const initialState = (): Record<AgentId, NodeState> => ({
   social: { status: 'idle', logs: [] },
 })
 
-export function AgentRail({ events }: { events: AgentEvent[] }) {
+interface Props {
+  events: AgentEvent[]
+  /** 局部重生成：只有源头节点可单独重跑（版式/社媒是派生渲染，自动跟随） */
+  onRegen?: (id: AgentId) => void
+  busyId?: AgentId | null
+}
+
+const REGENABLE: AgentId[] = ['brand', 'copy', 'visual']
+
+export function AgentRail({ events, onRegen, busyId }: Props) {
   const [states, setStates] = useState<Record<AgentId, NodeState>>(initialState)
   const lastCount = useRef(0)
 
@@ -75,6 +84,16 @@ export function AgentRail({ events }: { events: AgentEvent[] }) {
               <span className="agent-led" />
               <div className="agent-name">
                 {a.name} <span className="en">{a.en} AGENT</span>
+                {onRegen && REGENABLE.includes(a.id) && st.status !== 'idle' && (
+                  <button
+                    className="agent-regen"
+                    title={`重新生成${a.name}`}
+                    disabled={busyId != null}
+                    onClick={() => onRegen(a.id)}
+                  >
+                    {busyId === a.id ? '⏳' : '↻'}
+                  </button>
+                )}
               </div>
               <div className="agent-desc">{a.desc}</div>
               {st.logs.length > 0 && (

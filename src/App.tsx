@@ -4,11 +4,11 @@ import { Stage, type Tab } from './components/Stage'
 import { TokenInspector } from './components/TokenInspector'
 import { SettingsModal } from './components/SettingsModal'
 import { DEMO_BRIEFS, DEMO_RESULT } from './lib/demoData'
-import { editBrandTokens, optimizeBrief, runPipeline } from './lib/orchestrator'
+import { editBrandTokens, genBrand, genCopy, genHero, optimizeBrief, runPipeline } from './lib/orchestrator'
 import { applyBrand } from './lib/tokens'
 import { llmReady, loadSettings, saveSettings } from './lib/providers/config'
 import type { AppSettings } from './lib/providers/types'
-import type { AgentEvent, GenResult } from './lib/types'
+import type { AgentEvent, AgentId, GenResult } from './lib/types'
 
 type Phase = 'idle' | 'running' | 'ready' | 'error'
 
@@ -34,6 +34,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [optimizing, setOptimizing] = useState(false)
   const [originalBrief, setOriginalBrief] = useState<string | null>(null)
+  const [busyPart, setBusyPart] = useState<AgentId | null>(null)
   const toastId = useRef(0)
 
   const toast = useCallback((msg: string, err = false) => {
@@ -96,6 +97,36 @@ export default function App() {
       setPhase('error')
       emit({ agent: 'brand', type: 'error', message: msg })
       toast(`生成失败：${msg}`, true)
+    }
+  }
+
+  /** 局部重生成：只重跑指定源头 Agent，其余产物原样保留 */
+  const onRegen = async (id: AgentId) => {
+    if (busyPart || phase === 'running') return
+    setBusyPart(id)
+    try {
+      if (id === 'brand') {
+        const brand = await genBrand(result.brief, settings.llm, emit)
+        setResult((r) => ({ ...r, brand }))
+        setBrandVersion((v) => v + 1)
+        setFlash(true)
+        setTimeout(() => setFlash(false), 1000)
+        toast('品牌系统已重新生成 · 全部物料已按新规则渲染')
+      } else if (id === 'copy') {
+        const copy = await genCopy(result.brief, result.brand, settings.llm, emit)
+        setResult((r) => ({ ...r, copy }))
+        setFlash(true)
+        setTimeout(() => setFlash(false), 1000)
+        toast('文案已重新生成 · 宣传册/海报/社媒同步更新')
+      } else if (id === 'visual') {
+        const hero = await genHero(settings.image, result.brand, emit)
+        setResult((r) => ({ ...r, heroUrl: hero ?? r.heroUrl }))
+        toast(hero ? '主视觉已重新生成' : '生图失败，保留程序化视觉')
+      }
+    } catch (e) {
+      toast(`重生成失败：${(e as Error).message}`, true)
+    } finally {
+      setBusyPart(null)
     }
   }
 
@@ -171,7 +202,7 @@ export default function App() {
       </header>
 
       {/* ── 左侧管线 ── */}
-      <AgentRail events={events} />
+      <AgentRail events={events} onRegen={onRegen} busyId={busyPart} />
 
       {/* ── 中央舞台 ── */}
       <Stage

@@ -306,6 +306,28 @@ body::after {
   font-weight: 400;
   letter-spacing: 0.08em;
 }
+.agent-regen {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.agent-regen:hover:not(:disabled) {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.agent-regen:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .agent-desc {
   font-size: 11px;
   color: var(--text-dim);
