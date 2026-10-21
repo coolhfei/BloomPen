@@ -60,6 +60,8 @@ export interface GenResult {
   copy: CopyBundle
   /** 英雄图地址（同源代理路径或 dataURL），可能为 null（生图失败兜底） */
   heroUrl: string | null
+  /** 易拉宝专用英雄图（单独重生成时独立于海报/社媒；null 则使用 heroUrl） */
+  rollupHeroUrl?: string | null
   savedAt: number
 }
 

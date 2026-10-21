@@ -71,6 +71,165 @@
   padding-top: 12px;
 }
 
+/* ── 易拉宝 480×1200（80×200cm，导出 5x=2400×6000）────────── */
+.bf-rollup {
+  width: 480px;
+  height: 1200px;
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-paper, #f6f1e6);
+  color: var(--brand-ink, #1c1a17);
+  font-family: var(--font-body, sans-serif);
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.bf-rollup-safe-top {
+  height: 80px;
+  background: var(--brand-primary);
+  flex: none;
+}
+.bf-rollup-safe-bottom {
+  height: 80px;
+  background: var(--brand-primary);
+  flex: none;
+}
+
+/* 品牌区 */
+.bf-rollup-brand {
+  flex: none;
+  padding: 40px 36px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+.bf-rollup-name {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
+  font-size: 56px;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: var(--brand-ink);
+}
+.bf-rollup-name.t-m { font-size: 46px; }
+.bf-rollup-name.t-l { font-size: 38px; }
+.bf-rollup-slogan {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight-soft, 500);
+  font-size: 20px;
+  letter-spacing: 0.16em;
+  color: var(--brand-primary);
+}
+
+/* 英雄图 */
+.bf-rollup-hero {
+  flex: 1;
+  min-height: 0;
+  margin: 28px 24px 0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: var(--brand-primary);
+}
+.bf-rollup-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bf-rollup-hero-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--brand-secondary) 50%, var(--brand-primary)) 0%, var(--brand-primary) 60%);
+}
+.bf-rollup-hero-fallback .bf-contour {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 卖点列表 */
+.bf-rollup-pillars {
+  flex: none;
+  padding: 28px 36px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.bf-rollup-pillar {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-muted) 30%, transparent);
+  padding-bottom: 14px;
+}
+.bf-rollup-pillar-tag {
+  flex: none;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--brand-paper);
+  background: var(--brand-accent);
+  padding: 4px 10px;
+  border-radius: 2px;
+}
+.bf-rollup-pillar-title {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight, 600);
+  font-size: 24px;
+  letter-spacing: 0.04em;
+}
+
+/* 装饰分隔 */
+.bf-rollup-decor {
+  flex: none;
+  padding: 24px 36px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* CTA */
+.bf-rollup-cta {
+  flex: none;
+  padding: 20px 36px 0;
+  text-align: center;
+}
+.bf-rollup-cta-headline {
+  font-family: var(--font-display, serif);
+  font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  color: var(--brand-primary);
+}
+.bf-rollup-cta-sub {
+  margin-top: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--brand-muted);
+}
+
+/* 底部信息条 */
+.bf-rollup-baseline {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 36px 24px;
+}
+.bf-rollup-baseline .bf-en {
+  font-size: 14px;
+  color: var(--brand-muted);
+}
+
 /* ── 文字长度自适应分档（长文案自动缩字号，任何场景不破版）── */
 .bf-cover-name.t-m { font-size: 88px; }
 .bf-cover-name.t-l { font-size: 68px; }

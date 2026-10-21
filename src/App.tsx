@@ -35,6 +35,7 @@ export default function App() {
   const [optimizing, setOptimizing] = useState(false)
   const [originalBrief, setOriginalBrief] = useState<string | null>(null)
   const [busyPart, setBusyPart] = useState<AgentId | null>(null)
+  const [rollupBusy, setRollupBusy] = useState(false)
   const toastId = useRef(0)
 
   // 简报输入框自适应高度（AI 优化后内容长也能全看）
@@ -139,6 +140,25 @@ export default function App() {
     }
   }
 
+  /** 易拉宝单独重生成英雄图（不影响宣传册/海报/社媒） */
+  const onRegenRollup = async () => {
+    if (busyPart || phase === 'running') return
+    setRollupBusy(true)
+    try {
+      const hero = await genHero(settings.image, result.brand, emit)
+      if (hero) {
+        setResult((r) => ({ ...r, rollupHeroUrl: hero }))
+        toast('易拉宝主视觉已重新生成')
+      } else {
+        toast('生图失败，保留原有视觉', true)
+      }
+    } catch (e) {
+      toast(`易拉宝重生成失败：${(e as Error).message}`, true)
+    } finally {
+      setRollupBusy(false)
+    }
+  }
+
   const onEditSubmit = async (instruction: string, selectedText: string) => {
     setEditing(true)
     emit({ agent: 'brand', type: 'log', message: `框选编辑：「${instruction}」` })
@@ -225,6 +245,8 @@ export default function App() {
         editing={editing}
         empty={phase === 'idle' || phase === 'running'}
         running={phase === 'running'}
+        onRegenRollup={onRegenRollup}
+        rollupBusy={rollupBusy}
       />
 
       {/* ── 右侧检视器 ── */}

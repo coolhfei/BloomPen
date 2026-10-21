@@ -3,11 +3,12 @@ import type { BrandSystem, GenResult } from '../lib/types'
 import { Brochure } from './Brochure'
 import { Poster } from './Poster'
 import { BannerCard, ProgramCard, QuoteCard } from './Social'
+import { RollupBanner } from './RollupBanner'
 import { LogoMark, MotifDecor } from './BrandMark'
 import { exportPdf, exportPng, exportTagged } from '../lib/exports'
 import templatesCss from './templates.css?inline'
 
-export type Tab = 'brand' | 'brochure' | 'poster' | 'social'
+export type Tab = 'brand' | 'brochure' | 'poster' | 'social' | 'rollup'
 
 interface Props {
   result: GenResult
@@ -21,6 +22,10 @@ interface Props {
   empty: boolean
   /** Agent 协作中（空状态显示生成中提示） */
   running?: boolean
+  /** 易拉宝单独重生成英雄图 */
+  onRegenRollup?: () => void
+  /** 易拉宝重生成中 */
+  rollupBusy?: boolean
 }
 
 /** 缩放展示框：内层保持真实导出尺寸，外层按舞台空间缩放 */
@@ -47,7 +52,7 @@ function ScaleFrame({
 const BROCHURE_W = 794 * 3 + 28 * 2 // 3+2 两行排布：一行 3 页
 const BROCHURE_H = 1123 * 2 + 28
 
-export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty, running }: Props) {
+export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty, running, onRegenRollup, rollupBusy }: Props) {
   const { brand, copy, heroUrl } = result
   const bodyRef = useRef<HTMLDivElement>(null)
   const brochureRef = useRef<HTMLDivElement>(null)
@@ -193,6 +198,11 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
     } else if (tab === 'social' && socialRef.current) {
       const n = await exportTagged(socialRef.current)
       if (n === 0) console.warn('未找到可导出节点')
+    } else if (tab === 'rollup' && socialRef.current) {
+      const node = socialRef.current.querySelector<HTMLElement>('.bf-rollup')
+      if (node) {
+        await exportPng(node, node.dataset.export ?? `${brand.brandName}-易拉宝.png`)
+      }
     }
   }
 
@@ -202,10 +212,11 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
   const sqScale = Math.min(0.34, Math.max(0.14, (bodySize.h - 160) / 1440))
   const vtScale = Math.min(0.34, Math.max(0.14, (bodySize.h - 120) / 1440))
   const bnScale = Math.min(0.46, Math.max(0.14, (bodySize.w - 8) / 1920), Math.max(0.14, (bodySize.h * 0.42) / 1080))
+  const rollupScale = Math.min(0.62, Math.max(0.2, (bodySize.h - 8) / 1200))
   const sheetScale = Math.min(1, Math.max(0.3, (bodySize.w - 8) / 900))
 
   const exportLabel =
-    tab === 'brochure' ? '导出 PDF' : tab === 'poster' ? '导出 PNG' : tab === 'social' ? '导出全部 PNG' : ''
+    tab === 'brochure' ? '导出 PDF' : tab === 'poster' ? '导出 PNG' : tab === 'social' ? '导出全部 PNG' : tab === 'rollup' ? '导出 PNG' : ''
 
   return (
     <main className="stage">
@@ -216,6 +227,7 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
             ['brochure', '宣传册'],
             ['poster', '主视觉海报'],
             ['social', '社媒套图'],
+            ['rollup', '易拉宝'],
           ] as [Tab, string][]
         ).map(([id, label]) => (
           <button key={id} className={`stage-tab ${tab === id ? 'active' : ''}`} onClick={() => onTab(id)}>
@@ -224,6 +236,11 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
         ))}
         <div className="stage-actions">
           <span className="stage-hint">{editMode ? '拖拽框选物料区域 → 自然语言修改' : ''}</span>
+          {tab === 'rollup' && !empty && onRegenRollup && (
+            <button className="btn btn-sm" onClick={onRegenRollup} disabled={rollupBusy}>
+              {rollupBusy ? '⏳ 重生成中…' : '↻ 重生成易拉宝'}
+            </button>
+          )}
           {!empty && (
             <>
               <button className={`btn btn-sm ${editMode ? 'btn-danger' : ''}`} onClick={onToggleEdit}>
@@ -314,6 +331,13 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
               </ScaleFrame>
               <p className="bf-social-caption">{copy.socialCaptions[2]?.body ?? ''}</p>
             </div>
+          </div>
+        )}
+        {tab === 'rollup' && (
+          <div ref={socialRef}>
+            <ScaleFrame w={480} h={1200} scale={rollupScale}>
+              <RollupBanner brand={brand} copy={copy} heroUrl={result.rollupHeroUrl ?? heroUrl} />
+            </ScaleFrame>
           </div>
         )}
           </>
