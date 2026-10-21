@@ -12,8 +12,8 @@
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "electron:start": "npm run build && electron .",
-    "dist": "npm run build && electron-builder",
-    "dist:win": "npm run build && electron-builder --win"
+    "dist": "npm run build && electron-builder && electron-builder -c electron-builder.portable.yml",
+    "dist:win": "npm run build && electron-builder --win && electron-builder --win -c electron-builder.portable.yml"
   },
   "dependencies": {
     "@fontsource-variable/noto-sans-sc": "^5.2.8",

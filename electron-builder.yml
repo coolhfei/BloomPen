@@ -18,10 +18,6 @@ win:
       arch:
         - x64
         - ia32
-    - target: portable
-      arch:
-        - x64
-        - ia32
   artifactName: BrandForge-${version}-win-${arch}-setup.${ext}
 
 nsis:

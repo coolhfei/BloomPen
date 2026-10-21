@@ -1,0 +1,21 @@
+appId: dev.brandforge.desktop
+productName: BrandForge
+copyright: Copyright © 2026 BrandForge contributors · AGPL-3.0
+
+directories:
+  output: release
+
+files:
+  - dist/**
+  - electron/**
+  - package.json
+
+asar: true
+
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+        - ia32
+  artifactName: BrandForge-${version}-win-${arch}-portable.${ext}

@@ -31,6 +31,10 @@ jobs:
       - name: Package app (electron-builder)
         run: npx electron-builder --publish never
 
+      - name: Package portable (Windows only)
+        if: runner.os == 'Windows'
+        run: npx electron-builder --win -c electron-builder.portable.yml --publish never
+
       - name: Upload artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
