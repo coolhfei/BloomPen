@@ -214,6 +214,7 @@ body::after {
 /* ── 左侧 Agent 管线 ─────────────────────────────── */
 .rail {
   grid-area: rail;
+  min-height: 0;
   border-right: 1px solid var(--line);
   background: var(--bg-soft);
   overflow-y: auto;
@@ -343,6 +344,7 @@ body::after {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   background:
     radial-gradient(90% 70% at 50% 0%, #1a1610 0%, var(--bg) 65%);
   position: relative;
@@ -394,6 +396,7 @@ body::after {
 }
 .stage-body {
   flex: 1;
+  min-height: 0;
   margin: 12px 24px 20px;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -530,6 +533,7 @@ body::after {
 /* ── 右侧 token 检视器 ─────────────────────────────── */
 .inspector {
   grid-area: inspector;
+  min-height: 0;
   border-left: 1px solid var(--line);
   background: var(--bg-soft);
   overflow-y: auto;
