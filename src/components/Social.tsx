@@ -7,9 +7,17 @@ interface Props {
   heroUrl: string | null
 }
 
+/** 清洗：模型把载体标注写进标题时剥掉前缀（如"方图引用卡｜xxx"） */
+const stripCardLabel = (t: string) =>
+  t.replace(/^[^｜|]*(方图|竖图|横图|引用卡|节目卡|海报卡|卡片|Banner|banner)[｜|]\s*/, '').trim()
+/** 清洗：卡片正文不含 #话题标签（发布侧用，不上卡） */
+const stripHashtags = (t: string) => t.replace(/#[^#\s　]+/g, '').replace(/\s{2,}/g, ' ').trim()
+
 /** 方图 · 卖点卡 1080×1080（社媒第一图：讲清产品帮我干什么） */
 export function QuoteCard({ brand, copy }: Props) {
-  const cap = copy.socialCaptions[0] ?? { title: brand.slogan.zh, body: '' }
+  const raw = copy.socialCaptions[0] ?? { title: brand.slogan.zh, body: '' }
+  const title = stripCardLabel(raw.title)
+  const body = stripHashtags(raw.body)
   return (
     <div className="bf-sq bf-quote-card" data-export={`${brand.brandName}-社媒方图-1080x1080.png`}>
       <header className="bf-quote-card-top">
@@ -17,8 +25,9 @@ export function QuoteCard({ brand, copy }: Props) {
         <span className="bf-en">@{brand.brandNameEn.toLowerCase().replace(/\s+/g, '')}</span>
       </header>
       <div className="bf-quote-card-main">
-        <p className="bf-quote-card-text">{cap.title}</p>
-        {cap.body && <p className="bf-quote-card-sub">{cap.body}</p>}
+        <span className="bf-quote-card-kicker">{brand.category}</span>
+        <p className="bf-quote-card-text">{title}</p>
+        {body && <p className="bf-quote-card-sub">{body}</p>}
       </div>
       <div className="bf-quote-card-wave">
         <MotifDecor width={280} height={20} color={brand.colors.accent} brand={brand} />

@@ -655,22 +655,37 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 32px;
+  gap: 26px;
+}
+.bf-quote-card-kicker {
+  align-self: flex-start;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 20px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+  border: 1.5px solid color-mix(in srgb, var(--brand-accent) 55%, transparent);
+  padding: 8px 18px;
+  border-radius: 999px;
 }
 .bf-quote-card-text {
   font-family: var(--font-display, serif);
   font-weight: var(--font-display-weight-strong, var(--font-display-weight, 700));
-  font-size: 60px;
-  line-height: 1.5;
-  letter-spacing: 0.03em;
+  font-size: 54px;
+  line-height: 1.42;
+  letter-spacing: 0.02em;
   color: var(--brand-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .bf-quote-card-sub {
   font-family: var(--font-body, sans-serif);
-  font-size: 30px;
-  line-height: 1.9;
-  color: color-mix(in srgb, var(--brand-ink) 70%, var(--brand-muted));
-  max-width: 860px;
+  font-size: 27px;
+  line-height: 1.85;
+  color: color-mix(in srgb, var(--brand-ink) 72%, var(--brand-muted));
+  max-width: 840px;
 }
 .bf-quote-card-foot {
   display: flex;
