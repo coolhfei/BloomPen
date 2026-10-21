@@ -117,9 +117,47 @@ async function genComfyUI(cfg: ImageConfig, prompt: string, onProgress?: (m: str
   throw new Error('ComfyUI 生图超时')
 }
 
-/** 阿里云百炼 wanx2.1 异步任务（云端选项之一） */
+/** 阿里云百炼：wanx 系走异步 text2image 端点，qwen-image 系走同步 multimodal-generation 端点 */
 async function genDashScope(cfg: ImageConfig, prompt: string, onProgress?: (m: string) => void): Promise<string> {
   if (!cfg.apiKey) throw new Error('DashScope 适配器需要填写 API Key')
+  const model = cfg.model || 'wanx2.1-t2i-turbo'
+  const isQwenImage = model.startsWith('qwen-image')
+  return isQwenImage ? genDashScopeQwen(cfg, model, prompt, onProgress) : genDashScopeWanx(cfg, model, prompt, onProgress)
+}
+
+/** qwen-image 系：POST multimodal-generation/generation（同步，一次出图） */
+async function genDashScopeQwen(cfg: ImageConfig, model: string, prompt: string, onProgress?: (m: string) => void): Promise<string> {
+  onProgress?.('百炼同步出图中…')
+  const res = await httpRequest({
+    url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${cfg.apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      input: {
+        messages: [{ role: 'user', content: [{ text: prompt }] }],
+      },
+      parameters: {
+        negative_prompt: NEGATIVE,
+        size: '832*1248',
+        n: 1,
+      },
+    }),
+    responseType: 'json',
+    timeoutMs: 300_000,
+  })
+  if (res.status < 200 || res.status >= 300) throw new Error(`百炼提交失败（HTTP ${res.status}）：${res.body.slice(0, 200)}`)
+  const content = JSON.parse(res.body)?.output?.choices?.[0]?.message?.content
+  const imageUrl: string | undefined = Array.isArray(content) ? content?.[0]?.image : content?.image
+  if (!imageUrl) throw new Error('百炼未返回图片地址')
+  return base64ToDataUrl(await fetchBase64(imageUrl))
+}
+
+/** wanx 系：异步任务 + 轮询 */
+async function genDashScopeWanx(cfg: ImageConfig, model: string, prompt: string, onProgress?: (m: string) => void): Promise<string> {
   onProgress?.('百炼任务提交…')
   const sub = await httpRequest({
     url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis',
@@ -203,9 +241,16 @@ export async function testImage(cfg: ImageConfig): Promise<string> {
       if (r.status !== 200) throw new Error(`HTTP ${r.status}`)
       return `ComfyUI 在线 · ${JSON.parse(r.body)?.system?.os ?? ''}`
     }
-    case 'dashscope':
-      if (!cfg.apiKey) throw new Error('缺少 API Key')
+    case 'dashscope': {
+      const r = await httpRequest({
+        url: 'https://dashscope.aliyuncs.com/compatible-mode/v1/models',
+        headers: { Authorization: `Bearer ${cfg.apiKey}` },
+        responseType: 'json',
+        timeoutMs: 15_000,
+      })
+      if (r.status !== 200) throw new Error(`HTTP ${r.status}`)
       return 'Key 已填写（真实出图时校验）'
+    }
     case 'openai-images': {
       const r = await httpRequest({
         url: `${cfg.baseURL.replace(/\/+$/, '')}/models`,

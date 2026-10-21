@@ -37,6 +37,15 @@ export default function App() {
   const [busyPart, setBusyPart] = useState<AgentId | null>(null)
   const toastId = useRef(0)
 
+  // 简报输入框自适应高度（AI 优化后内容长也能全看）
+  const briefRef = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => {
+    const el = briefRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 320)}px`
+  }, [brief])
+
   const toast = useCallback((msg: string, err = false) => {
     const id = ++toastId.current
     setToasts((t) => [...t, { id, msg, err }])
@@ -162,6 +171,7 @@ export default function App() {
         <div className="brief-area">
           <div className="brief-wrap">
             <textarea
+              ref={briefRef}
               className="brief-input"
               rows={2}
               value={brief}
@@ -213,7 +223,8 @@ export default function App() {
         onToggleEdit={() => setEditMode((v) => !v)}
         onEditSubmit={onEditSubmit}
         editing={editing}
-        empty={phase === 'idle'}
+        empty={phase === 'idle' || phase === 'running'}
+        running={phase === 'running'}
       />
 
       {/* ── 右侧检视器 ── */}

@@ -19,6 +19,8 @@ interface Props {
   editing: boolean
   /** 首次打开尚无产物：舞台显示空状态而非示例物料 */
   empty: boolean
+  /** Agent 协作中（空状态显示生成中提示） */
+  running?: boolean
 }
 
 /** 缩放展示框：内层保持真实导出尺寸，外层按舞台空间缩放 */
@@ -45,7 +47,7 @@ function ScaleFrame({
 const BROCHURE_W = 794 * 3 + 28 * 2 // 3+2 两行排布：一行 3 页
 const BROCHURE_H = 1123 * 2 + 28
 
-export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty }: Props) {
+export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty, running }: Props) {
   const { brand, copy, heroUrl } = result
   const bodyRef = useRef<HTMLDivElement>(null)
   const brochureRef = useRef<HTMLDivElement>(null)
@@ -247,12 +249,24 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
       >
         {empty ? (
           <div className="stage-empty">
-            <div className="stage-empty-title">还没有物料</div>
-            <div className="stage-empty-steps">
-              <span>① 在上方输入品牌简报（点输入框可选示例）</span>
-              <span>② 点击「⚡ 生成物料包」</span>
-              <span>③ 品牌规范 / 宣传册 / 海报 / 社媒套图将出现在这里</span>
-            </div>
+            {running ? (
+              <>
+                <div className="stage-empty-title">Agent 协作中…</div>
+                <div className="stage-empty-steps">
+                  <span>左侧管线实时显示各 Agent 工作状态</span>
+                  <span>完成后整套物料将出现在这里</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="stage-empty-title">还没有物料</div>
+                <div className="stage-empty-steps">
+                  <span>① 在上方输入品牌简报（点输入框可选示例）</span>
+                  <span>② 点击「⚡ 生成物料包」</span>
+                  <span>③ 品牌规范 / 宣传册 / 海报 / 社媒套图将出现在这里</span>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <>
