@@ -6,3 +6,4 @@ release
 .env.local
 .DS_Store
 thumbs.db
+ARCHITECTURE.local.md
