@@ -11,6 +11,11 @@ const { pathToFileURL } = require('url')
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || ''
 const isDev = !!DEV_URL
 
+// Windows 后台恢复黑屏修复：禁止后台节流/遮挡检测暂停渲染
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
+app.commandLine.appendSwitch('disable-renderer-backgrounding')
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
+
 /** 渲染进程目录（打包后为 resources/app/dist） */
 function rendererDir() {
   return isDev ? null : path.join(__dirname, '..', 'dist')
@@ -37,6 +42,7 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: true,
       spellcheck: false,
+      backgroundThrottling: false,
     },
   })
   if (isDev) {
@@ -45,6 +51,21 @@ function createWindow() {
   } else {
     win.loadFile(path.join(rendererDir(), 'index.html'))
   }
+
+  // Windows 从后台切回时强制重绘（防 GPU 合成器丢帧变黑）
+  const repaint = () => {
+    try {
+      win.webContents.invalidate()
+    } catch { /* window may be closing */ }
+  }
+  win.on('show', repaint)
+  win.on('restore', repaint)
+  win.on('focus', () => {
+    repaint()
+    // 延迟二次重绘（部分 GPU 驱动首次 invalidate 不够）
+    setTimeout(repaint, 100)
+  })
+
   return win
 }
 
