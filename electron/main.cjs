@@ -11,11 +11,7 @@ const { pathToFileURL } = require('url')
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || ''
 const isDev = !!DEV_URL
 
-// Windows 息屏/后台恢复黑屏修复（分层）：
-// 1. 命令行开关：禁止后台节流/遮挡检测
-// 2. backgroundThrottling: false：渲染进程不降频
-// 3. aggressiveRepaint：resize hack 强制重建 GPU 表面（invalidate 不够深）
-// 4. powerMonitor：监听系统唤醒/解锁（比 window focus 更可靠）
+// Windows 后台/息屏恢复黑屏修复
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
@@ -56,33 +52,43 @@ function createWindow() {
     win.loadFile(path.join(rendererDir(), 'index.html'))
   }
 
-  // 息屏/后台恢复黑屏修复：resize hack 强制 GPU 重建表面 + 电源事件监听
+  // 黑屏修复：带防抖锁的分级重试（不用 hide/show，避免无限循环）
+  let repaintLock = false
   const aggressiveRepaint = () => {
-    try {
-      // ① 标脏帧（浅层修复，部分场景够用）
-      win.webContents.invalidate()
+    if (repaintLock) return
+    repaintLock = true
+    const try_ = (fn) => { try { fn() } catch { /* closing */ } }
 
-      // ② resize hack：改 1px 强制 OS 重新分配窗口像素缓冲 → 合成器重建 GPU 表面
-      const bounds = win.getBounds()
-      win.setBounds({ ...bounds, height: bounds.height + 1 })
-      setTimeout(() => {
-        try {
-          win.setBounds(bounds)
-          win.webContents.invalidate()
-        } catch { /* closing */ }
-      }, 50)
+    // Level 1（0ms）：标脏帧
+    try_(() => win.webContents.invalidate())
 
-      // ③ CSS 层强制重排（触发 Chromium 重新走一遍渲染管线）
-      setTimeout(() => {
-        try {
+    // Level 2（200ms）：resize hack — 1px 变化强制 OS 重分配像素缓冲
+    setTimeout(() => {
+      try_(() => {
+        const b = win.getBounds()
+        win.setBounds({ ...b, height: b.height + 1 })
+        setTimeout(() => try_(() => { win.setBounds(b); win.webContents.invalidate() }), 30)
+      })
+    }, 200)
+
+    // Level 3（1000ms）：反向 resize + CSS 重排
+    setTimeout(() => {
+      try_(() => {
+        const b = win.getBounds()
+        win.setBounds({ ...b, width: b.width + 1 })
+        setTimeout(() => try_(() => {
+          win.setBounds(b)
           win.webContents.executeJavaScript(
             'document.documentElement.style.transform="translateZ(0)";' +
-            'setTimeout(()=>document.documentElement.style.transform="",100);'
+            'setTimeout(()=>document.documentElement.style.transform="",50);'
           ).catch(() => {})
           win.webContents.invalidate()
-        } catch { /* closing */ }
-      }, 200)
-    } catch { /* closing */ }
+        }), 30)
+      })
+    }, 1000)
+
+    // 2.5 秒后解锁（允许下一轮）
+    setTimeout(() => { repaintLock = false }, 2500)
   }
 
   // 窗口事件
@@ -90,13 +96,9 @@ function createWindow() {
   win.on('restore', aggressiveRepaint)
   win.on('focus', aggressiveRepaint)
 
-  // 电源事件（比 window focus 更可靠：系统唤醒/解锁时必然触发）
+  // 电源事件
   powerMonitor.on('resume', aggressiveRepaint)
   powerMonitor.on('unlock-screen', aggressiveRepaint)
-  powerMonitor.on('lock-screen', () => {
-    // 锁屏时提前标脏，回来时 Chromium 已有排队帧
-    try { win.webContents.invalidate() } catch { /* closing */ }
-  })
 
   return win
 }
