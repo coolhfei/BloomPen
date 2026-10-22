@@ -3,7 +3,7 @@
  * 职责：窗口、IPC 传输桥（Node fetch，消灭 CORS）、隐藏窗口 printToPDF。
  * 渲染进程零 Node 权限（contextIsolation + sandbox），所有网络/文件能力经 IPC 白名单暴露。
  */
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, powerMonitor } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { pathToFileURL } = require('url')
@@ -11,7 +11,11 @@ const { pathToFileURL } = require('url')
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || ''
 const isDev = !!DEV_URL
 
-// Windows 后台恢复黑屏修复：禁止后台节流/遮挡检测暂停渲染
+// Windows 息屏/后台恢复黑屏修复（分层）：
+// 1. 命令行开关：禁止后台节流/遮挡检测
+// 2. backgroundThrottling: false：渲染进程不降频
+// 3. aggressiveRepaint：resize hack 强制重建 GPU 表面（invalidate 不够深）
+// 4. powerMonitor：监听系统唤醒/解锁（比 window focus 更可靠）
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
@@ -52,18 +56,46 @@ function createWindow() {
     win.loadFile(path.join(rendererDir(), 'index.html'))
   }
 
-  // Windows 从后台切回时强制重绘（防 GPU 合成器丢帧变黑）
-  const repaint = () => {
+  // 息屏/后台恢复黑屏修复：resize hack 强制 GPU 重建表面 + 电源事件监听
+  const aggressiveRepaint = () => {
     try {
+      // ① 标脏帧（浅层修复，部分场景够用）
       win.webContents.invalidate()
-    } catch { /* window may be closing */ }
+
+      // ② resize hack：改 1px 强制 OS 重新分配窗口像素缓冲 → 合成器重建 GPU 表面
+      const bounds = win.getBounds()
+      win.setBounds({ ...bounds, height: bounds.height + 1 })
+      setTimeout(() => {
+        try {
+          win.setBounds(bounds)
+          win.webContents.invalidate()
+        } catch { /* closing */ }
+      }, 50)
+
+      // ③ CSS 层强制重排（触发 Chromium 重新走一遍渲染管线）
+      setTimeout(() => {
+        try {
+          win.webContents.executeJavaScript(
+            'document.documentElement.style.transform="translateZ(0)";' +
+            'setTimeout(()=>document.documentElement.style.transform="",100);'
+          ).catch(() => {})
+          win.webContents.invalidate()
+        } catch { /* closing */ }
+      }, 200)
+    } catch { /* closing */ }
   }
-  win.on('show', repaint)
-  win.on('restore', repaint)
-  win.on('focus', () => {
-    repaint()
-    // 延迟二次重绘（部分 GPU 驱动首次 invalidate 不够）
-    setTimeout(repaint, 100)
+
+  // 窗口事件
+  win.on('show', aggressiveRepaint)
+  win.on('restore', aggressiveRepaint)
+  win.on('focus', aggressiveRepaint)
+
+  // 电源事件（比 window focus 更可靠：系统唤醒/解锁时必然触发）
+  powerMonitor.on('resume', aggressiveRepaint)
+  powerMonitor.on('unlock-screen', aggressiveRepaint)
+  powerMonitor.on('lock-screen', () => {
+    // 锁屏时提前标脏，回来时 Chromium 已有排队帧
+    try { win.webContents.invalidate() } catch { /* closing */ }
   })
 
   return win
