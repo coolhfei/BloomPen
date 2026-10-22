@@ -48,6 +48,47 @@ async function genA1111(cfg: ImageConfig, prompt: string, onProgress?: (m: strin
   return base64ToDataUrl(b64)
 }
 
+/** ComfyUI 提交工作流并等待首个图片输出（dataURL）；供生图与抠图共用 */
+export async function comfyRunToImage(
+  base: string,
+  workflow: Record<string, unknown>,
+  onProgress?: (m: string) => void
+): Promise<string> {
+  onProgress?.('ComfyUI 任务提交…')
+  const sub = await httpRequest({
+    url: `${base}/prompt`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: workflow }),
+    responseType: 'json',
+    timeoutMs: 60_000,
+  })
+  if (sub.status < 200 || sub.status >= 300) throw new Error(`ComfyUI 提交失败（HTTP ${sub.status}）：${sub.body.slice(0, 200)}`)
+  const promptId: string = JSON.parse(sub.body)?.prompt_id
+  if (!promptId) throw new Error('ComfyUI 未返回 prompt_id')
+
+  const deadline = Date.now() + 300_000
+  while (Date.now() < deadline) {
+    await sleep(2000)
+    onProgress?.('ComfyUI 渲染中…')
+    const hist = await httpRequest({ url: `${base}/history/${promptId}`, responseType: 'json', timeoutMs: 30_000 })
+    if (hist.status === 200) {
+      const node = JSON.parse(hist.body)?.[promptId]
+      if (node?.status?.status_str === 'error') throw new Error('ComfyUI 工作流执行出错')
+      const outputs = node?.outputs ?? {}
+      for (const k of Object.keys(outputs)) {
+        const out = outputs[k]?.images?.[0]
+        if (out) {
+          const q = new URLSearchParams({ filename: out.filename, subfolder: out.subfolder ?? '', type: out.type ?? 'output' })
+          const b64 = await fetchBase64(`${base}/view?${q.toString()}`)
+          return base64ToDataUrl(b64)
+        }
+      }
+    }
+  }
+  throw new Error('ComfyUI 任务超时')
+}
+
 /** ComfyUI：内置默认 txt2img 工作流（用户配置 checkpoint 名），提交后轮询 /history */
 async function genComfyUI(cfg: ImageConfig, prompt: string, onProgress?: (m: string) => void): Promise<string> {
   const base = cfg.baseURL.replace(/\/+$/, '')
@@ -85,36 +126,7 @@ async function genComfyUI(cfg: ImageConfig, prompt: string, onProgress?: (m: str
     6: { class_type: 'VAEDecode', inputs: { samples: ['5', 0], vae: ['1', 2] } },
     7: { class_type: 'SaveImage', inputs: { filename_prefix: 'brandforge', images: ['6', 0] } },
   }
-  onProgress?.('ComfyUI 任务提交…')
-  const sub = await httpRequest({
-    url: `${base}/prompt`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: workflow }),
-    responseType: 'json',
-    timeoutMs: 60_000,
-  })
-  if (sub.status < 200 || sub.status >= 300) throw new Error(`ComfyUI 提交失败（HTTP ${sub.status}）：${sub.body.slice(0, 200)}`)
-  const promptId: string = JSON.parse(sub.body)?.prompt_id
-  if (!promptId) throw new Error('ComfyUI 未返回 prompt_id')
-
-  const deadline = Date.now() + 300_000
-  while (Date.now() < deadline) {
-    await sleep(2000)
-    onProgress?.('ComfyUI 渲染中…')
-    const hist = await httpRequest({ url: `${base}/history/${promptId}`, responseType: 'json', timeoutMs: 30_000 })
-    if (hist.status === 200) {
-      const node = JSON.parse(hist.body)?.[promptId]
-      const out = node?.outputs?.['7']?.images?.[0]
-      if (node?.status?.status_str === 'error') throw new Error('ComfyUI 工作流执行出错')
-      if (out) {
-        const q = new URLSearchParams({ filename: out.filename, subfolder: out.subfolder ?? '', type: out.type ?? 'output' })
-        const b64 = await fetchBase64(`${base}/view?${q.toString()}`)
-        return base64ToDataUrl(b64)
-      }
-    }
-  }
-  throw new Error('ComfyUI 生图超时')
+  return comfyRunToImage(base, workflow, onProgress)
 }
 
 /** 阿里云百炼：wanx 系走异步 text2image 端点，qwen-image 系走同步 multimodal-generation 端点 */

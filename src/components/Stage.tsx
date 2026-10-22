@@ -53,7 +53,7 @@ const BROCHURE_W = 794 * 3 + 28 * 2 // 3+2 两行排布：一行 3 页
 const BROCHURE_H = 1123 * 2 + 28
 
 export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty, running, onRegenRollup, rollupBusy }: Props) {
-  const { brand, copy, heroUrl } = result
+  const { brand, copy, heroUrl, products } = result
   const bodyRef = useRef<HTMLDivElement>(null)
   const brochureRef = useRef<HTMLDivElement>(null)
   const posterRef = useRef<HTMLDivElement>(null)
@@ -297,7 +297,7 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
           <div ref={brochureRef}>
             <ScaleFrame w={BROCHURE_W} h={BROCHURE_H} scale={brochureScale}>
               <div style={{ width: BROCHURE_W }}>
-                <Brochure brand={brand} copy={copy} heroUrl={heroUrl} />
+                <Brochure brand={brand} copy={copy} heroUrl={heroUrl} products={products} />
               </div>
             </ScaleFrame>
           </div>
@@ -306,7 +306,7 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
         {tab === 'poster' && (
           <div ref={posterRef}>
             <ScaleFrame w={800} h={1200} scale={posterScale}>
-              <Poster brand={brand} copy={copy} heroUrl={heroUrl} />
+              <Poster brand={brand} copy={copy} heroUrl={heroUrl} products={products} />
             </ScaleFrame>
           </div>
         )}
@@ -315,19 +315,19 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
           <div ref={socialRef} className="social-scaled">
             <div className="social-col">
               <ScaleFrame w={1080} h={1080} scale={sqScale}>
-                <QuoteCard brand={brand} copy={copy} heroUrl={heroUrl} />
+                <QuoteCard brand={brand} copy={copy} heroUrl={heroUrl} products={products} />
               </ScaleFrame>
               <p className="bf-social-caption">{copy.socialCaptions[0]?.body ?? ''}</p>
             </div>
             <div className="social-col">
               <ScaleFrame w={1080} h={1440} scale={vtScale}>
-                <ProgramCard brand={brand} copy={copy} heroUrl={heroUrl} />
+                <ProgramCard brand={brand} copy={copy} heroUrl={heroUrl} products={products} />
               </ScaleFrame>
               <p className="bf-social-caption">{copy.socialCaptions[1]?.body ?? ''}</p>
             </div>
             <div className="social-col social-col-wide">
               <ScaleFrame w={1920} h={1080} scale={bnScale}>
-                <BannerCard brand={brand} copy={copy} heroUrl={heroUrl} />
+                <BannerCard brand={brand} copy={copy} heroUrl={heroUrl} products={products} />
               </ScaleFrame>
               <p className="bf-social-caption">{copy.socialCaptions[2]?.body ?? ''}</p>
             </div>
@@ -336,7 +336,7 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
         {tab === 'rollup' && (
           <div ref={socialRef}>
             <ScaleFrame w={480} h={1200} scale={rollupScale}>
-              <RollupBanner brand={brand} copy={copy} heroUrl={result.rollupHeroUrl ?? heroUrl} />
+              <RollupBanner brand={brand} copy={copy} heroUrl={result.rollupHeroUrl ?? heroUrl} products={products} />
             </ScaleFrame>
           </div>
         )}

@@ -1,24 +1,21 @@
-import type { BrandSystem, CopyBundle } from '../lib/types'
+import type { BrandSystem, CopyBundle, ProductImage } from '../lib/types'
+import { resolveSlot } from '../lib/slots'
 import { textTier } from '../lib/textfit'
-import { ContourField, LogoMark, MotifDecor } from './BrandMark'
+import { LogoMark, MotifDecor } from './BrandMark'
+import { SlotVisual } from './SlotVisual'
 
 interface Props {
   brand: BrandSystem
   copy: CopyBundle
   heroUrl: string | null
+  products: ProductImage[]
 }
 
 /** 主视觉海报：800×1200（2:3） */
-export function Poster({ brand, copy, heroUrl }: Props) {
+export function Poster({ brand, copy, heroUrl, products }: Props) {
   return (
     <div className="bf-poster">
-      {heroUrl ? (
-        <img className="bf-poster-hero" src={heroUrl} alt="主视觉" crossOrigin="anonymous" />
-      ) : (
-        <div className="bf-poster-hero bf-poster-hero-fallback">
-          <ContourField seed={9} color={brand.colors.paper} opacity={0.3} />
-        </div>
-      )}
+      <SlotVisual slot={resolveSlot(products, heroUrl, 'hero')} brand={brand} fallbackClass="bf-poster-hero-fallback" seed={9} alt="主视觉" />
       <div className="bf-poster-shade" />
       <header className="bf-poster-top">
         <LogoMark size={44} brand={brand} />

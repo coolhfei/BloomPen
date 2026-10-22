@@ -3,12 +3,13 @@ import { AgentRail } from './components/AgentRail'
 import { Stage, type Tab } from './components/Stage'
 import { TokenInspector } from './components/TokenInspector'
 import { SettingsModal } from './components/SettingsModal'
+import { ProductStrip } from './components/ProductStrip'
 import { DEMO_BRIEFS, DEMO_RESULT } from './lib/demoData'
 import { editBrandTokens, genBrand, genCopy, genHero, optimizeBrief, runPipeline } from './lib/orchestrator'
 import { applyBrand } from './lib/tokens'
 import { llmReady, loadSettings, saveSettings } from './lib/providers/config'
 import type { AppSettings } from './lib/providers/types'
-import type { AgentEvent, AgentId, GenResult } from './lib/types'
+import type { AgentEvent, AgentId, GenResult, ProductImage } from './lib/types'
 
 type Phase = 'idle' | 'running' | 'ready' | 'error'
 
@@ -36,6 +37,7 @@ export default function App() {
   const [originalBrief, setOriginalBrief] = useState<string | null>(null)
   const [busyPart, setBusyPart] = useState<AgentId | null>(null)
   const [rollupBusy, setRollupBusy] = useState(false)
+  const [products, setProducts] = useState<ProductImage[]>([])
   const toastId = useRef(0)
 
   // 简报输入框自适应高度（AI 优化后内容长也能全看）
@@ -62,6 +64,11 @@ export default function App() {
   useEffect(() => {
     applyBrand(result.brand)
   }, [result, brandVersion])
+
+  // 商品图集是用户资产：编辑即同步进 result，物料即时重渲染（无需重新生成）
+  useEffect(() => {
+    setResult((r) => ({ ...r, products }))
+  }, [products])
 
   const emit = useCallback((e: AgentEvent) => setEvents((prev) => [...prev, e]), [])
 
@@ -97,7 +104,7 @@ export default function App() {
     setEditMode(false)
     setTab('brochure')
     try {
-      const res = await runPipeline(brief.trim(), emit, settings)
+      const res = await runPipeline(brief.trim(), products, emit, settings)
       setResult(res)
       setBrandVersion((v) => v + 1)
       setPhase('ready')
@@ -129,7 +136,7 @@ export default function App() {
         setTimeout(() => setFlash(false), 1000)
         toast('文案已重新生成 · 宣传册/海报/社媒同步更新')
       } else if (id === 'visual') {
-        const hero = await genHero(settings.image, result.brand, emit)
+        const hero = await genHero(settings.image, result.brand, emit, result.products.length > 0)
         setResult((r) => ({ ...r, heroUrl: hero ?? r.heroUrl }))
         toast(hero ? '主视觉已重新生成' : '生图失败，保留程序化视觉')
       }
@@ -145,7 +152,7 @@ export default function App() {
     if (busyPart || phase === 'running') return
     setRollupBusy(true)
     try {
-      const hero = await genHero(settings.image, result.brand, emit)
+      const hero = await genHero(settings.image, result.brand, emit, result.products.length > 0)
       if (hero) {
         setResult((r) => ({ ...r, rollupHeroUrl: hero }))
         toast('易拉宝主视觉已重新生成')
@@ -218,6 +225,13 @@ export default function App() {
                 ↩ 恢复原文
               </button>
             )}
+            <ProductStrip
+              products={products}
+              imageCfg={settings.image}
+              disabled={running}
+              onChange={(fn) => setProducts((cur) => fn(cur))}
+              onToast={toast}
+            />
           </div>
           <button className="btn" onClick={onOptimizeBrief} disabled={optimizing || running || !brief.trim()}>
             {optimizing ? '✨ 优化中…' : '✨ 优化简报'}

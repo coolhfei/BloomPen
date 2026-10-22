@@ -14,12 +14,13 @@ import {
   clampPatchColors,
   COPY_PROMPT,
   DATAPOINTS_PROMPT,
+  heroScenePrompt,
   PATCH_SYSTEM_PROMPT,
 } from './prompts'
 import { snapWeight } from './tokens'
 import type { AppSettings } from './providers/types'
 import { fontMenu } from './types'
-import type { AgentEvent, AgentId, BrandPatch, BrandSystem, CopyBundle, GenResult } from './types'
+import type { AgentEvent, AgentId, BrandPatch, BrandSystem, CopyBundle, GenResult, ProductImage } from './types'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -101,16 +102,16 @@ export async function genCopy(brief: string, brand: BrandSystem, llm: AppSetting
   return copy
 }
 
-/** 主视觉 Agent：品牌系统 → 英雄图（失败返回 null，程序化视觉兜底） */
-export async function genHero(image: AppSettings['image'], brand: BrandSystem, emit: Emit): Promise<string | null> {
+/** 主视觉 Agent：品牌系统 → 英雄图（失败返回 null，程序化视觉兜底）；sceneOnly 时约束画面不出现商品主体 */
+export async function genHero(image: AppSettings['image'], brand: BrandSystem, emit: Emit, sceneOnly = false): Promise<string | null> {
   emit({ agent: 'visual', type: 'status', status: 'running' })
-  emit({ agent: 'visual', type: 'log', message: image.kind === 'none' ? '生图已关闭 · 使用程序化视觉' : '构造主视觉提示词…' })
+  emit({ agent: 'visual', type: 'log', message: image.kind === 'none' ? '生图已关闭 · 使用程序化视觉' : sceneOnly ? '构造场景背景提示词（不含商品主体）…' : '构造主视觉提示词…' })
   if (image.kind === 'none') {
     emit({ agent: 'visual', type: 'status', status: 'done' })
     return null
   }
   try {
-    const hero = await generateHero(image, brand.heroPrompt, (msg) => emit({ agent: 'visual', type: 'log', message: msg }))
+    const hero = await generateHero(image, heroScenePrompt(brand.heroPrompt, sceneOnly), (msg) => emit({ agent: 'visual', type: 'log', message: msg }))
     emit({ agent: 'visual', type: 'log', message: '主视觉生成完成' })
     emit({ agent: 'visual', type: 'status', status: 'done' })
     return hero
@@ -127,13 +128,13 @@ export async function genHero(image: AppSettings['image'], brand: BrandSystem, e
  * brand 完成后，copy（LLM）与 visual（生图适配器）并行发起；
  * layout 只依赖 copy（程序化渲染）；social 等 copy + visual。
  */
-export async function runPipeline(brief: string, emit: Emit, settings: AppSettings): Promise<GenResult> {
+export async function runPipeline(brief: string, products: ProductImage[], emit: Emit, settings: AppSettings): Promise<GenResult> {
   // ── 1. 品牌系统 ──
   const brand = await genBrand(brief, settings.llm, emit)
 
-  // ── 2. 文案 ∥ 主视觉 并行 ──
+  // ── 2. 文案 ∥ 主视觉 并行（有真图时主视觉降级为场景背景）──
   const copyPromise = genCopy(brief, brand, settings.llm, emit)
-  const visualPromise = genHero(settings.image, brand, emit)
+  const visualPromise = genHero(settings.image, brand, emit, products.length > 0)
 
   // ── 3. 版式（等文案）──
   emit({ agent: 'layout', type: 'status', status: 'running' })
@@ -151,7 +152,7 @@ export async function runPipeline(brief: string, emit: Emit, settings: AppSettin
   await sleep(400)
   emit({ agent: 'social', type: 'status', status: 'done' })
 
-  return { brief, brand, copy, heroUrl: hero, savedAt: Date.now() }
+  return { brief, brand, copy, heroUrl: hero, products, savedAt: Date.now() }
 }
 
 /** 框选编辑：自然语言 → token 补丁 → 新品牌系统 */

@@ -3,13 +3,18 @@
  * 职责：窗口、IPC 传输桥（Node fetch，消灭 CORS）、隐藏窗口 printToPDF。
  * 渲染进程零 Node 权限（contextIsolation + sandbox），所有网络/文件能力经 IPC 白名单暴露。
  */
-const { app, BrowserWindow, ipcMain, dialog, powerMonitor } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, powerMonitor, protocol, net } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { pathToFileURL } = require('url')
 
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || ''
 const isDev = !!DEV_URL
+
+// bf-res:// 自定义协议：渲染进程 fetch 安装包内的抠图模型资源（离线可用）
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'bf-res', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
+])
 
 // Windows 后台/息屏恢复黑屏终极修复：
 // 所有软件层修复（invalidate/resize/重排）对长时间后台场景不够深，
@@ -67,6 +72,15 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  protocol.handle('bf-res', (req) => {
+    const base = app.isPackaged
+      ? path.join(process.resourcesPath, 'matting')
+      : path.join(__dirname, '..', 'assets', 'matting')
+    const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, '')
+    const p = path.normalize(path.join(base, rel))
+    if (!p.startsWith(path.normalize(base))) return new Response('forbidden', { status: 403 })
+    return net.fetch(pathToFileURL(p).toString())
+  })
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

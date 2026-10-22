@@ -54,6 +54,18 @@ export interface CopyBundle {
   socialCaptions: { title: string; body: string }[]
 }
 
+/** 用户上传的商品图（用户资产：重生成/框选编辑永不动它） */
+export interface ProductImage {
+  id: string
+  /** 原图 dataURL（超长边已下采样至 1600） */
+  dataUrl: string
+  /** 原始 MIME（上传时记录，透明检测快路径用） */
+  mime: string
+  /** 透明底版（原图直通或抠图产出）；null = 未就绪/不可用 → 直嵌 */
+  cutoutUrl: string | null
+  isMain: boolean
+}
+
 export interface GenResult {
   brief: string
   brand: BrandSystem
@@ -62,6 +74,8 @@ export interface GenResult {
   heroUrl: string | null
   /** 易拉宝专用英雄图（单独重生成时独立于海报/社媒；null 则使用 heroUrl） */
   rollupHeroUrl?: string | null
+  /** 商品图集（空数组 = 未上传，全走现有兜底） */
+  products: ProductImage[]
   savedAt: number
 }
 

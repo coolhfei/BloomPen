@@ -216,3 +216,11 @@ export function clampPatchColors(patch: BrandPatch, brand: BrandSystem, instruct
   }
   return { ...patch, colors: out }
 }
+
+/** 有真实商品图时的场景约束：AI 只画氛围背景，绝不画商品本体（铁律的出口） */
+export const SCENE_ONLY_SUFFIX =
+  '画面中不出现任何商品、产品、包装、logo 与文字，纯场景氛围背景，构图中央大面积干净留白。'
+
+export function heroScenePrompt(heroPrompt: string, sceneOnly: boolean): string {
+  return sceneOnly ? heroPrompt + '\n' + SCENE_ONLY_SUFFIX : heroPrompt
+}

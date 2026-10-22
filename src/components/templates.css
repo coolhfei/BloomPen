@@ -1139,3 +1139,68 @@
   text-transform: uppercase;
   color: color-mix(in srgb, var(--brand-paper) 60%, transparent);
 }
+
+/* ── 统一图位（SlotVisual）：外层填充满定位父容器 ── */
+.bf-slot {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.bf-slot--hero > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* 直嵌：卡片式消化真图（白底/杂背景都成立） */
+.bf-slot--embed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6%;
+  background: color-mix(in srgb, var(--brand-paper) 90%, var(--brand-secondary));
+}
+.bf-slot--embed > img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+/* 合成：场景垫底 + 透明底商品叠加 */
+.bf-slot--composite .bf-composite-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bf-composite-bg-procedural {
+  background: radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--brand-secondary) 50%, var(--brand-primary)) 0%, var(--brand-primary) 60%);
+}
+.bf-composite-bg-procedural .bf-contour {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.bf-slot--composite .bf-composite-fg {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.35));
+}
+/* 宣传册内页配图位（仅 embed） */
+.bf-intro-figure,
+.bf-pillars-figure {
+  position: relative;
+  height: 200px;
+  margin: 16px 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.bf-pillars-figure {
+  margin-top: 20px;
+}

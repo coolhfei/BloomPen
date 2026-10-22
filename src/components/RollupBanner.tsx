@@ -1,18 +1,21 @@
-import type { BrandSystem, CopyBundle } from '../lib/types'
+import type { BrandSystem, CopyBundle, ProductImage } from '../lib/types'
+import { resolveSlot } from '../lib/slots'
 import { textTier } from '../lib/textfit'
-import { ContourField, LogoMark, MotifDecor } from './BrandMark'
+import { LogoMark, MotifDecor } from './BrandMark'
+import { SlotVisual } from './SlotVisual'
 
 interface Props {
   brand: BrandSystem
   copy: CopyBundle
   heroUrl: string | null
+  products: ProductImage[]
 }
 
 /**
  * 易拉宝 80×200cm：480×1200px（屏幕预览），导出 2400×6000px（5x，满足 150dpi 打印）
  * 结构：安全区 → 品牌区 → 英雄图 → 卖点列表 → CTA → 安全区
  */
-export function RollupBanner({ brand, copy, heroUrl }: Props) {
+export function RollupBanner({ brand, copy, heroUrl, products }: Props) {
   return (
     <div
       className="bf-rollup"
@@ -33,13 +36,7 @@ export function RollupBanner({ brand, copy, heroUrl }: Props) {
 
       {/* 英雄图 / 主视觉 */}
       <div className="bf-rollup-hero">
-        {heroUrl ? (
-          <img src={heroUrl} alt="主视觉" crossOrigin="anonymous" />
-        ) : (
-          <div className="bf-rollup-hero-fallback">
-            <ContourField seed={7} color={brand.colors.paper} opacity={0.3} />
-          </div>
-        )}
+        <SlotVisual slot={resolveSlot(products, heroUrl, 'hero')} brand={brand} fallbackClass="bf-rollup-hero-fallback" seed={7} alt="主视觉" />
       </div>
 
       {/* 核心卖点（2-3 条，取 pillars 前 3） */}

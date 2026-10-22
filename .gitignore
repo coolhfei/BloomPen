@@ -7,3 +7,5 @@ release
 .DS_Store
 thumbs.db
 ARCHITECTURE.local.md
+docs/superpowers
+assets/matting

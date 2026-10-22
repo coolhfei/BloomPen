@@ -1,15 +1,21 @@
-import type { BrandSystem, CopyBundle } from '../lib/types'
+import type { BrandSystem, CopyBundle, ProductImage } from '../lib/types'
+import { resolveSlot } from '../lib/slots'
 import { textTier } from '../lib/textfit'
 import { ContourField, LogoMark, MotifDecor } from './BrandMark'
+import { SlotVisual } from './SlotVisual'
 
 interface Props {
   brand: BrandSystem
   copy: CopyBundle
   heroUrl: string | null
+  products: ProductImage[]
 }
 
 /** 宣传册：封面 + 简介 + 内容矩阵 + 排期 + 封底，共 5 页 A4（794×1123） */
-export function Brochure({ brand, copy, heroUrl }: Props) {
+export function Brochure({ brand, copy, heroUrl, products }: Props) {
+  const coverSlot = resolveSlot(products, heroUrl, 'hero')
+  const inline0 = resolveSlot(products, heroUrl, 'inline', 0)
+  const inline1 = resolveSlot(products, heroUrl, 'inline', 1)
   return (
     <div className="bf-brochure">
       {/* ── P1 封面 ── */}
@@ -24,14 +30,9 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
         </div>
 
         <div className="bf-cover-hero">
-          {heroUrl ? (
-            <img src={heroUrl} alt="品牌主视觉" crossOrigin="anonymous" />
-          ) : (
-            <div className="bf-cover-hero-fallback">
-              <ContourField seed={5} color={brand.colors.primary} opacity={0.4} />
-              <MotifDecor width={360} height={64} color={brand.colors.accent} brand={brand} />
-            </div>
-          )}
+          <SlotVisual slot={coverSlot} brand={brand} fallbackClass="bf-cover-hero-fallback" seed={5} fallbackColor={brand.colors.primary} fallbackOpacity={0.4} alt="品牌主视觉">
+            <MotifDecor width={360} height={64} color={brand.colors.accent} brand={brand} />
+          </SlotVisual>
         </div>
 
         <div className="bf-cover-bottom">
@@ -59,6 +60,11 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
                   <span className="bf-stat-k">{d.label}</span>
                 </div>
               ))}
+            </div>
+          )}
+          {inline0 && (
+            <div className="bf-intro-figure">
+              <SlotVisual slot={inline0} brand={brand} alt="商品图" />
             </div>
           )}
           <div className="bf-intro-wave">
@@ -106,9 +112,15 @@ export function Brochure({ brand, copy, heroUrl }: Props) {
             </article>
           ))}
         </div>
-        <div className="bf-pillars-deco">
-          <ContourField seed={7} color={brand.colors.primary} opacity={0.18} />
-        </div>
+        {inline1 ? (
+          <div className="bf-pillars-figure">
+            <SlotVisual slot={inline1} brand={brand} alt="商品图" />
+          </div>
+        ) : (
+          <div className="bf-pillars-deco">
+            <ContourField seed={7} color={brand.colors.primary} opacity={0.18} />
+          </div>
+        )}
         <footer className="bf-page-foot">
           <span>{brand.brandNameEn}</span>
           <span>{brand.slogan.en}</span>

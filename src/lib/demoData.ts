@@ -8,6 +8,7 @@ export const DEMO_RESULT: GenResult = {
   brief: '为城市人文内容品牌「声景」生成上市传播物料包，包含播客节目、MOOK 书系和线下沙龙',
   savedAt: 0,
   heroUrl: null,
+  products: [],
   brand: {
     brandName: '声景',
     brandNameEn: 'SOUNDSCAPE',

@@ -12,6 +12,10 @@ files:
 
 asar: true
 
+extraResources:
+  - from: assets/matting
+    to: matting
+
 win:
   target:
     - target: nsis

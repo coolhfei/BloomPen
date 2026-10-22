@@ -1,12 +1,15 @@
-import type { BrandSystem, CopyBundle } from '../lib/types'
+import type { BrandSystem, CopyBundle, ProductImage } from '../lib/types'
+import { resolveSlot } from '../lib/slots'
 import { stripCardLabel, stripHashtags } from '../lib/copyqc'
 import { textTier } from '../lib/textfit'
-import { ContourField, LogoMark, MotifDecor } from './BrandMark'
+import { LogoMark, MotifDecor } from './BrandMark'
+import { SlotVisual } from './SlotVisual'
 
 interface Props {
   brand: BrandSystem
   copy: CopyBundle
   heroUrl: string | null
+  products: ProductImage[]
 }
 
 /** 方图 · 卖点卡 1080×1080（社媒第一图：讲清产品帮我干什么） */
@@ -48,18 +51,12 @@ export function QuoteCard({ brand, copy }: Props) {
 }
 
 /** 竖图 · 核心板块卡 1080×1440（讲产品第一大能力，配英雄图） */
-export function ProgramCard({ brand, copy, heroUrl }: Props) {
+export function ProgramCard({ brand, copy, heroUrl, products }: Props) {
   const pillar = copy.pillars[0] ?? { tag: '核心', title: brand.brandName, desc: '' }
   return (
     <div className="bf-vt bf-program-card" data-export={`${brand.brandName}-社媒竖图-1080x1440.png`}>
       <div className="bf-program-card-hero">
-        {heroUrl ? (
-          <img src={heroUrl} alt="产品主视觉" crossOrigin="anonymous" />
-        ) : (
-          <div className="bf-program-card-hero-fallback">
-            <ContourField seed={4} color={brand.colors.paper} opacity={0.35} />
-          </div>
-        )}
+        <SlotVisual slot={resolveSlot(products, heroUrl, 'hero')} brand={brand} fallbackClass="bf-program-card-hero-fallback" seed={4} fallbackOpacity={0.35} alt="产品主视觉" />
         <span className="bf-program-card-no">{pillar.tag}</span>
       </div>
       <div className="bf-program-card-body">
