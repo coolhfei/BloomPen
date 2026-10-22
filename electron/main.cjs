@@ -11,10 +11,11 @@ const { pathToFileURL } = require('url')
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || ''
 const isDev = !!DEV_URL
 
-// Windows 后台/息屏恢复黑屏修复
-app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
-app.commandLine.appendSwitch('disable-renderer-backgrounding')
-app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
+// Windows 后台/息屏恢复黑屏终极修复：
+// 所有软件层修复（invalidate/resize/重排）对长时间后台场景不够深，
+// 根因是 GPU 合成器表面丢失后不可恢复。禁用硬件加速从根源消灭此问题。
+// 本应用渲染内容为静态 HTML/CSS（无动画/无视频/无 WebGL），性能影响可忽略。
+app.disableHardwareAcceleration()
 
 /** 渲染进程目录（打包后为 resources/app/dist） */
 function rendererDir() {
@@ -52,51 +53,13 @@ function createWindow() {
     win.loadFile(path.join(rendererDir(), 'index.html'))
   }
 
-  // 黑屏修复：带防抖锁的分级重试（不用 hide/show，避免无限循环）
-  let repaintLock = false
+  // 黑屏修复（disableHardwareAcceleration 已根治，以下为轻量补充）
   const aggressiveRepaint = () => {
-    if (repaintLock) return
-    repaintLock = true
-    const try_ = (fn) => { try { fn() } catch { /* closing */ } }
-
-    // Level 1（0ms）：标脏帧
-    try_(() => win.webContents.invalidate())
-
-    // Level 2（200ms）：resize hack — 1px 变化强制 OS 重分配像素缓冲
-    setTimeout(() => {
-      try_(() => {
-        const b = win.getBounds()
-        win.setBounds({ ...b, height: b.height + 1 })
-        setTimeout(() => try_(() => { win.setBounds(b); win.webContents.invalidate() }), 30)
-      })
-    }, 200)
-
-    // Level 3（1000ms）：反向 resize + CSS 重排
-    setTimeout(() => {
-      try_(() => {
-        const b = win.getBounds()
-        win.setBounds({ ...b, width: b.width + 1 })
-        setTimeout(() => try_(() => {
-          win.setBounds(b)
-          win.webContents.executeJavaScript(
-            'document.documentElement.style.transform="translateZ(0)";' +
-            'setTimeout(()=>document.documentElement.style.transform="",50);'
-          ).catch(() => {})
-          win.webContents.invalidate()
-        }), 30)
-      })
-    }, 1000)
-
-    // 2.5 秒后解锁（允许下一轮）
-    setTimeout(() => { repaintLock = false }, 2500)
+    try { win.webContents.invalidate() } catch { /* closing */ }
   }
-
-  // 窗口事件
   win.on('show', aggressiveRepaint)
   win.on('restore', aggressiveRepaint)
   win.on('focus', aggressiveRepaint)
-
-  // 电源事件
   powerMonitor.on('resume', aggressiveRepaint)
   powerMonitor.on('unlock-screen', aggressiveRepaint)
 
