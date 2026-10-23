@@ -20,6 +20,12 @@ export function saveSettings(s: AppSettings): void {
   localStorage.setItem(KEY, JSON.stringify(s))
 }
 
+/** 清除本机全部模型配置（含 API Key）；返回全新默认配置 */
+export function clearSettings(): AppSettings {
+  localStorage.removeItem(KEY)
+  return structuredClone(DEFAULT_SETTINGS)
+}
+
 export function llmReady(s: AppSettings): boolean {
   return !!s.llm.baseURL.trim() && !!s.llm.model.trim()
 }

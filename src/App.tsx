@@ -7,7 +7,7 @@ import { ProductStrip } from './components/ProductStrip'
 import { DEMO_BRIEFS, DEMO_RESULT } from './lib/demoData'
 import { editBrandTokens, genBrand, genCopy, genHero, optimizeBrief, runPipeline } from './lib/orchestrator'
 import { applyBrand } from './lib/tokens'
-import { llmReady, loadSettings, saveSettings } from './lib/providers/config'
+import { clearSettings, llmReady, loadSettings, saveSettings } from './lib/providers/config'
 import type { AppSettings } from './lib/providers/types'
 import type { AgentEvent, AgentId, GenResult, ProductImage } from './lib/types'
 
@@ -283,6 +283,10 @@ export default function App() {
             setSettings(s)
             saveSettings(s)
             toast('模型配置已保存到本机')
+          }}
+          onClear={() => {
+            setSettings(clearSettings())
+            toast('已清除全部模型配置（含 API Key）')
           }}
           onClose={() => setSettingsOpen(false)}
         />

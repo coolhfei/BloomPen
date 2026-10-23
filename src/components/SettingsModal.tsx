@@ -7,6 +7,8 @@ import { isDesktop } from '../lib/providers/transport'
 interface Props {
   initial: AppSettings
   onSave: (s: AppSettings) => void
+  /** 清除本机全部配置（含 Key） */
+  onClear: () => void
   onClose: () => void
 }
 
@@ -18,7 +20,7 @@ const IMAGE_KINDS: { id: ImageKind; label: string }[] = [
   { id: 'openai-images', label: 'OpenAI 兼容 images' },
 ]
 
-export function SettingsModal({ initial, onSave, onClose }: Props) {
+export function SettingsModal({ initial, onSave, onClear, onClose }: Props) {
   const [draft, setDraft] = useState<AppSettings>(structuredClone(initial))
   const [llmMsg, setLlmMsg] = useState<{ text: string; err?: boolean } | null>(null)
   const [imgMsg, setImgMsg] = useState<{ text: string; err?: boolean } | null>(null)
@@ -186,6 +188,17 @@ export function SettingsModal({ initial, onSave, onClose }: Props) {
         </div>
 
         <footer className="modal-foot">
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => {
+              if (window.confirm('确定清除本机全部模型配置（含 API Key）？此操作不可撤销。')) {
+                onClear()
+                onClose()
+              }
+            }}
+          >
+            清除全部配置
+          </button>
           <span className="set-hint">配置仅保存在本机（localStorage），不上传任何服务器。</span>
           <div className="modal-actions">
             <button className="btn btn-sm" onClick={onClose}>
