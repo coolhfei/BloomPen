@@ -37,6 +37,7 @@ mac:
         - x64
         - arm64
   category: public.app-category.graphics-design
+  artifactName: BrandForge-${version}-${arch}.${ext}
 
 linux:
   target:
