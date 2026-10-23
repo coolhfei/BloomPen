@@ -22,8 +22,17 @@ jobs:
         with:
           node-version: 20
 
+      - name: Verify version matches tag
+        run: node -e "const v=require('./package.json').version,t=process.env.GITHUB_REF_NAME.replace(/^v/,'');if(v!==t){console.error('package.json ' + v + ' != tag ' + t);process.exit(1)}console.log('version ' + v + ' ok')"
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Fetch matting assets (background-removal model, ~55MB, bundled offline)
+        run: npm run matting:assets
 
       - name: Build renderer
         run: npm run build

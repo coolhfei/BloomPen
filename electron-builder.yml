@@ -32,7 +32,10 @@ nsis:
 
 mac:
   target:
-    - dmg
+    - target: dmg
+      arch:
+        - x64
+        - arm64
   category: public.app-category.graphics-design
 
 linux:
