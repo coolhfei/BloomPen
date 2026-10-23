@@ -1,7 +1,7 @@
 {
   "name": "brandforge",
   "private": true,
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "BrandForge - AI Brand Material Generator",
   "license": "AGPL-3.0-only",
   "main": "electron/main.cjs",
