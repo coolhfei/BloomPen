@@ -1,4 +1,5 @@
 import type { BrandSystem, CopyBundle, ProductImage } from '../lib/types'
+import { copyStats } from '../lib/qa'
 import { resolveSlot } from '../lib/slots'
 import { textTier } from '../lib/textfit'
 import { ContourField, LogoMark, MotifDecor } from './BrandMark'
@@ -16,6 +17,8 @@ export function Brochure({ brand, copy, heroUrl, products }: Props) {
   const coverSlot = resolveSlot(products, heroUrl, 'hero')
   const inline0 = resolveSlot(products, heroUrl, 'inline', 0)
   const inline1 = resolveSlot(products, heroUrl, 'inline', 1)
+  /** 密度分档：文案偏薄时放大字号/间距，版面保持饱满（QA 同源信号） */
+  const density = copyStats(copy).thin ? ' bf-density-loose' : ''
   return (
     <div className="bf-brochure">
       {/* ── P1 封面 ── */}
@@ -44,7 +47,7 @@ export function Brochure({ brand, copy, heroUrl, products }: Props) {
       </div>
 
       {/* ── P2 品牌简介 ── */}
-      <div className="bf-page bf-intro">
+      <div className={`bf-page bf-intro${density}`}>
         <header className="bf-page-head">
           <span className="bf-page-num">01</span>
           <span className="bf-page-title">关于我们 / About</span>
@@ -92,7 +95,7 @@ export function Brochure({ brand, copy, heroUrl, products }: Props) {
       </div>
 
       {/* ── P3 内容矩阵 ── */}
-      <div className="bf-page bf-pillars">
+      <div className={`bf-page bf-pillars${density}`}>
         <header className="bf-page-head">
           <span className="bf-page-num">02</span>
           <span className="bf-page-title">内容矩阵 / Pillars</span>
@@ -128,7 +131,7 @@ export function Brochure({ brand, copy, heroUrl, products }: Props) {
       </div>
 
       {/* ── P4 上市排期 ── */}
-      <div className="bf-page bf-programs">
+      <div className={`bf-page bf-programs${density}`}>
         <header className="bf-page-head">
           <span className="bf-page-num">03</span>
           <span className="bf-page-title">上市排期 / Launch</span>

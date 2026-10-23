@@ -377,6 +377,10 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  /* 弹性填充：吃满宣言区与底部引文之间的空间，条目均匀分布（杜绝中部空洞） */
+  flex: 1;
+  min-height: 0;
+  justify-content: space-evenly;
 }
 .bf-manifesto li {
   display: flex;
@@ -1204,3 +1208,16 @@
 .bf-pillars-figure {
   margin-top: 20px;
 }
+
+/* ── 密度分档（文案偏薄时放大字号/间距，版面保持饱满；与 QA copyStats 同源信号） ── */
+/* 只动无 textTier 的元素；方图主文案有分档，用 :not 守卫避免冲突 */
+.bf-density-loose .bf-intro-text { font-size: 23px; }
+.bf-density-loose .bf-manifesto li { padding: 30px 0; }
+.bf-density-loose .bf-manifesto-text { font-size: 32px; }
+.bf-density-loose .bf-pillar { padding: 30px 0; }
+.bf-density-loose .bf-pillar-title { font-size: 44px; }
+.bf-density-loose .bf-pillar-desc { font-size: 19px; }
+.bf-density-loose .bf-program { padding: 26px 0; }
+.bf-density-loose .bf-program-title { font-size: 34px; }
+.bf-density-loose .bf-program-sub { font-size: 16px; }
+.bf-density-loose .bf-quote-card-text:not(.t-m):not(.t-l) { font-size: 80px; }

@@ -1,4 +1,5 @@
 import type { BrandSystem, CopyBundle, ProductImage } from '../lib/types'
+import { copyStats } from '../lib/qa'
 import { resolveSlot } from '../lib/slots'
 import { stripCardLabel, stripHashtags } from '../lib/copyqc'
 import { textTier } from '../lib/textfit'
@@ -18,8 +19,9 @@ export function QuoteCard({ brand, copy }: Props) {
   const title = stripCardLabel(raw.title)
   const body = stripHashtags(raw.body)
   const tier = textTier(title, 8, 14)
+  const density = copyStats(copy).thin ? ' bf-density-loose' : ''
   return (
-    <div className="bf-sq bf-quote-card" data-export={`${brand.brandName}-社媒方图-1080x1080.png`}>
+    <div className={`bf-sq bf-quote-card${density}`} data-export={`${brand.brandName}-社媒方图-1080x1080.png`}>
       <header className="bf-quote-card-top">
         <LogoMark size={60} brand={brand} />
         <span className="bf-en">@{brand.brandNameEn.toLowerCase().replace(/\s+/g, '')}</span>
