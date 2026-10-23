@@ -7,6 +7,7 @@ const AGENTS: { id: AgentId; name: string; en: string; desc: string }[] = [
   { id: 'visual', name: '主视觉', en: 'VISUAL', desc: 'wanx 文生图 · 英雄图' },
   { id: 'layout', name: '版式', en: 'LAYOUT', desc: '宣传册 5 页网格排版' },
   { id: 'social', name: '社媒', en: 'SOCIAL', desc: '方图 / 竖图 / 横图三件套' },
+  { id: 'qa', name: '质检', en: 'QA', desc: '渲染体检 · 留白 / 缺图 / 分辨率 / 密度' },
 ]
 
 interface NodeState {
@@ -22,6 +23,7 @@ const initialState = (): Record<AgentId, NodeState> => ({
   visual: { status: 'idle', logs: [] },
   layout: { status: 'idle', logs: [] },
   social: { status: 'idle', logs: [] },
+  qa: { status: 'idle', logs: [] },
 })
 
 interface Props {

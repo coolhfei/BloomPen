@@ -4,8 +4,10 @@ import { Stage, type Tab } from './components/Stage'
 import { TokenInspector } from './components/TokenInspector'
 import { SettingsModal } from './components/SettingsModal'
 import { ProductStrip } from './components/ProductStrip'
+import { QaInspector } from './components/QaInspector'
 import { DEMO_BRIEFS, DEMO_RESULT } from './lib/demoData'
 import { editBrandTokens, genBrand, genCopy, genHero, optimizeBrief, runPipeline } from './lib/orchestrator'
+import { copyStats, type QaReport } from './lib/qa'
 import { applyBrand } from './lib/tokens'
 import { clearSettings, llmReady, loadSettings, saveSettings } from './lib/providers/config'
 import type { AppSettings } from './lib/providers/types'
@@ -38,6 +40,11 @@ export default function App() {
   const [busyPart, setBusyPart] = useState<AgentId | null>(null)
   const [rollupBusy, setRollupBusy] = useState(false)
   const [products, setProducts] = useState<ProductImage[]>([])
+  const [qaReport, setQaReport] = useState<QaReport | null>(null)
+  const qaAnnounced = useRef(false)
+  const qaAutoRetry = useRef(false)
+  /** 代际令牌：防止上一轮 QA 打回的延迟 Promise 覆盖新一轮生成结果 */
+  const runToken = useRef(0)
   const toastId = useRef(0)
 
   // 简报输入框自适应高度（AI 优化后内容长也能全看）
@@ -72,6 +79,31 @@ export default function App() {
 
   const emit = useCallback((e: AgentEvent) => setEvents((prev) => [...prev, e]), [])
 
+  /** QA 报告落地：生成后的首轮写 rail；之后编辑/换图的静默重检不刷屏 */
+  const onQaReport = useCallback(
+    (r: QaReport) => {
+      setQaReport(r)
+      if (qaAnnounced.current) return
+      qaAnnounced.current = true
+      emit({ agent: 'qa', type: 'status', status: 'done' })
+      const n = r.issues.filter((i) => i.severity !== 'info').length
+      emit({ agent: 'qa', type: 'log', message: n ? `QA 拦截：${n} 处问题待处理` : 'QA 通过' })
+      // 自动打回：文案偏薄 → 重写一次（每轮生成最多一次；像素不改版式，文案充实度用数据源判定）
+      if (copyStats(result.copy).thin && !qaAutoRetry.current) {
+        qaAutoRetry.current = true
+        const token = runToken.current
+        emit({ agent: 'qa', type: 'log', message: '内容不充实，已打回文案重写…' })
+        void genCopy(result.brief, result.brand, settings.llm, emit)
+          .then((copy) => {
+            if (runToken.current !== token) return // 新一轮已开始，丢弃过期重写
+            setResult((cur) => ({ ...cur, copy }))
+          })
+          .catch(() => emit({ agent: 'qa', type: 'log', message: '重写失败，保留现版本' }))
+      }
+    },
+    [emit, result, settings]
+  )
+
   const onOptimizeBrief = async () => {
     if (!brief.trim() || optimizing || phase === 'running') return
     if (!llmReady(settings)) {
@@ -103,11 +135,17 @@ export default function App() {
     setEvents([])
     setEditMode(false)
     setTab('brochure')
+    qaAnnounced.current = false
+    qaAutoRetry.current = false
+    setQaReport(null)
+    runToken.current++
     try {
       const res = await runPipeline(brief.trim(), products, emit, settings)
       setResult(res)
       setBrandVersion((v) => v + 1)
       setPhase('ready')
+      emit({ agent: 'qa', type: 'status', status: 'running' })
+      emit({ agent: 'qa', type: 'log', message: '渲染结果体检中…' })
       toast('整套物料已生成 · 可框选编辑或导出')
     } catch (e) {
       const msg = (e as Error).message
@@ -261,6 +299,7 @@ export default function App() {
         running={phase === 'running'}
         onRegenRollup={onRegenRollup}
         rollupBusy={rollupBusy}
+        qaReport={qaReport}
       />
 
       {/* ── 右侧检视器 ── */}
@@ -274,6 +313,9 @@ export default function App() {
           </div>
         ))}
       </div>
+
+      {/* ── QA 质检（离屏测量，物料就绪后运行） ── */}
+      {phase === 'ready' && <QaInspector result={result} onReport={onQaReport} />}
 
       {/* ── 模型设置 ── */}
       {settingsOpen && (

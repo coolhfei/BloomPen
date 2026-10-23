@@ -6,9 +6,26 @@ import { BannerCard, ProgramCard, QuoteCard } from './Social'
 import { RollupBanner } from './RollupBanner'
 import { LogoMark, MotifDecor } from './BrandMark'
 import { exportPdf, exportPng, exportTagged } from '../lib/exports'
+import { findSurfaceEl, QA_SURFACES, type QaIssue, type QaReport } from '../lib/qa'
 import templatesCss from './templates.css?inline'
 
 export type Tab = 'brand' | 'brochure' | 'poster' | 'social' | 'rollup'
+
+/** QA 物料面中文名 */
+const QA_LABELS: Record<string, string> = {
+  'brochure-1': '宣传册 P1',
+  'brochure-2': '宣传册 P2',
+  'brochure-3': '宣传册 P3',
+  'brochure-4': '宣传册 P4',
+  'brochure-5': '宣传册 P5',
+  poster: '海报',
+  quote: '社媒方图',
+  program: '社媒竖图',
+  banner: '社媒横图',
+  rollup: '易拉宝',
+  主视觉: '主视觉',
+  文案: '文案',
+}
 
 interface Props {
   result: GenResult
@@ -26,6 +43,8 @@ interface Props {
   onRegenRollup?: () => void
   /** 易拉宝重生成中 */
   rollupBusy?: boolean
+  /** QA 质检报告（null/undefined = 未运行或无问题） */
+  qaReport?: QaReport | null
 }
 
 /** 缩放展示框：内层保持真实导出尺寸，外层按舞台空间缩放 */
@@ -52,9 +71,13 @@ function ScaleFrame({
 const BROCHURE_W = 794 * 3 + 28 * 2 // 3+2 两行排布：一行 3 页
 const BROCHURE_H = 1123 * 2 + 28
 
-export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty, running, onRegenRollup, rollupBusy }: Props) {
+export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit, editing, empty, running, onRegenRollup, rollupBusy, qaReport }: Props) {
   const { brand, copy, heroUrl, products } = result
   const bodyRef = useRef<HTMLDivElement>(null)
+  const [qaOpen, setQaOpen] = useState(false)
+  const [pendingFlash, setPendingFlash] = useState<QaIssue | null>(null)
+  const [flash, setFlash] = useState<{ left: number; top: number; w: number; h: number } | null>(null)
+  const flashTimer = useRef(0)
   const brochureRef = useRef<HTMLDivElement>(null)
   const posterRef = useRef<HTMLDivElement>(null)
   const socialRef = useRef<HTMLDivElement>(null)
@@ -187,6 +210,38 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
     setRect(null)
   }
 
+  /** QA 定位：切 tab + 在物料问题区域画闪烁高亮框 */
+  const locate = (issue: QaIssue) => {
+    if (issue.tab !== tab) onTab(issue.tab as Tab)
+    setPendingFlash(issue)
+  }
+
+  // tab 渲染完成后测量目标面位置 → 画 1.6s 闪烁高亮框
+  useEffect(() => {
+    if (!pendingFlash) return
+    const t = window.setTimeout(() => {
+      setPendingFlash(null)
+      const s = QA_SURFACES.find((x) => x.id === pendingFlash.material)
+      const body = bodyRef.current
+      if (!s || !body) return
+      const node = findSurfaceEl(body, s)
+      if (!node) return
+      const bodyRect = body.getBoundingClientRect()
+      const nodeRect = node.getBoundingClientRect()
+      const scale = nodeRect.width / s.w
+      const r = pendingFlash.rect
+      setFlash({
+        left: nodeRect.left - bodyRect.left + body.scrollLeft + (r?.x ?? 0) * scale,
+        top: nodeRect.top - bodyRect.top + body.scrollTop + (r?.y ?? 0) * scale,
+        w: (r?.w ?? s.w) * scale,
+        h: (r?.h ?? s.h) * scale,
+      })
+      window.clearTimeout(flashTimer.current)
+      flashTimer.current = window.setTimeout(() => setFlash(null), 1600)
+    }, 120)
+    return () => window.clearTimeout(t)
+  }, [pendingFlash, tab])
+
   // ── 导出 ─────────────────────────────
   const doExport = async () => {
     if (tab === 'brochure' && brochureRef.current) {
@@ -229,11 +284,15 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
             ['social', '社媒套图'],
             ['rollup', '易拉宝'],
           ] as [Tab, string][]
-        ).map(([id, label]) => (
-          <button key={id} className={`stage-tab ${tab === id ? 'active' : ''}`} onClick={() => onTab(id)}>
-            {label}
-          </button>
-        ))}
+        ).map(([id, label]) => {
+          const qaCount = (qaReport?.issues ?? []).filter((i) => i.tab === id && i.severity !== 'info').length
+          return (
+            <button key={id} className={`stage-tab ${tab === id ? 'active' : ''}`} onClick={() => onTab(id)}>
+              {label}
+              {qaCount > 0 && <span className="stage-tab-badge">{qaCount}</span>}
+            </button>
+          )
+        })}
         <div className="stage-actions">
           <span className="stage-hint">{editMode ? '拖拽框选物料区域 → 自然语言修改' : ''}</span>
           {tab === 'rollup' && !empty && onRegenRollup && (
@@ -255,6 +314,29 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
           )}
         </div>
       </div>
+
+      {/* QA 报告条 */}
+      {qaReport && qaReport.issues.length > 0 && (
+        <div className="qa-strip">
+          <button className="qa-strip-toggle" onClick={() => setQaOpen((v) => !v)}>
+            🛡 QA 检测：{qaReport.issues.length} 项 {qaOpen ? '▾' : '▸'}
+          </button>
+          {qaOpen && (
+            <div className="qa-list">
+              {qaReport.issues.map((issue, i) => (
+                <div key={i} className={`qa-item qa-${issue.severity}`}>
+                  <span className="qa-dot" />
+                  <span className="qa-material">{QA_LABELS[issue.material] ?? issue.material}</span>
+                  <span className="qa-msg">{issue.message}</span>
+                  <button className="qa-locate" onClick={() => locate(issue)}>
+                    定位
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div
         ref={bodyRef}
@@ -342,6 +424,9 @@ export function Stage({ result, tab, onTab, editMode, onToggleEdit, onEditSubmit
         )}
           </>
         )}
+
+        {/* QA 定位高亮 */}
+        {flash && <div className="qa-flash" style={{ left: flash.left, top: flash.top, width: flash.w, height: flash.h }} />}
 
         {/* 框选编辑 UI */}
         {rect && <div className="edit-rect" style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h }} />}

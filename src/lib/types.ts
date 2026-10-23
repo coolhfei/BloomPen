@@ -88,7 +88,7 @@ export type BrandPatch = {
   motifs?: string[]
 }
 
-export type AgentId = 'brand' | 'copy' | 'visual' | 'layout' | 'social'
+export type AgentId = 'brand' | 'copy' | 'visual' | 'layout' | 'social' | 'qa'
 
 export type AgentStatus = 'idle' | 'running' | 'done' | 'error'
 
