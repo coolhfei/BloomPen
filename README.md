@@ -110,9 +110,11 @@
 git clone https://github.com/coolhfei/BloomPen.git && cd BloomPen
 npm install && npm run dev        # 打开 http://localhost:5173
 
-# 方式 B：打包桌面客户端（Windows 安装包）
+# 方式 B：本地打包桌面客户端（Windows 安装版/免安装版）
 npm install && npm run dist:win   # 安装包在 release/ 目录
 ```
+
+> 📦 **不想折腾环境？直接下载现成客户端** → [Releases](https://github.com/coolhfei/BloomPen/releases/latest)：Windows 安装版（setup）/ 免安装版（portable，双击即用）、macOS（Apple 芯片 / Intel 两版）。
 
 **第 2 步 · 配模型**（打开应用内 **⚙ 模型设置**，三选一）：
 
@@ -147,6 +149,9 @@ npm install && npm run dist:win   # 安装包在 release/ 目录
 
 **我的数据会上传吗？**
 不会。软件完全本地运行，只与你配置的模型端点直连（本地模型则全程不出机）。配置与密钥只存在你本机。
+
+**macOS 打开提示「已损坏」或「无法验证开发者」？**
+发布包未做 Apple 签名（证书年费所限）。处理：右键应用图标 →「打开」→ 再点「打开」即可；仍不行就在终端执行 `xattr -cr /Applications/BrandForge.app` 后重新打开。
 
 **没有 GPU / 不配生图会怎样？**
 全流程照跑：英雄图区域自动使用程序化视觉（等高线+声波图形），宣传册/海报/社媒图的文字版式完全不受影响。
